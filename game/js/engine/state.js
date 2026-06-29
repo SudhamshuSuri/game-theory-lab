@@ -29,6 +29,7 @@ export function createInitialState() {
       currentScenario: null,
       currentRound: 0,
       multiRoundHistory: [],
+      pendingDiscovery: null,
     },
     history: [],
     settings: {

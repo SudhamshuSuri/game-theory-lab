@@ -70,6 +70,23 @@ window.App = {
   continueSave() {
     const result = saveManager.loadAutoSave();
     if (result.success) {
+      const state = gameState.get();
+      const pendingConcept = state.world.pendingDiscovery;
+      if (pendingConcept) {
+        gameState.update('world.pendingDiscovery', null);
+        _pendingDiscovery = null;
+        render('discovery', { conceptId: pendingConcept });
+        return;
+      }
+      const completed = state.player.completedScenarios;
+      const lastDone = completed[completed.length - 1];
+      if (lastDone) {
+        const next = scenarioRegistry.getNextScenario(lastDone);
+        if (next) {
+          this.playScenario(next.id);
+          return;
+        }
+      }
       this.showMenu();
     } else {
       this.startNewGame();
@@ -80,6 +97,7 @@ window.App = {
     _currentScenario = null;
     _currentInstances = null;
     _pendingDiscovery = null;
+    gameState.update('world.pendingDiscovery', null);
     render('title');
   },
 
@@ -89,6 +107,10 @@ window.App = {
 
   showEncyclopedia() {
     render('encyclopedia');
+  },
+
+  showConceptDetail(conceptId) {
+    render('conceptDetail', { conceptId });
   },
 
   showTimeline() {
@@ -236,8 +258,10 @@ window.App = {
     if (concept && !alreadyDiscovered) {
       gameState.addDiscovery(concept.id);
       _pendingDiscovery = concept.id;
+      gameState.update('world.pendingDiscovery', concept.id);
     } else {
       _pendingDiscovery = null;
+      gameState.update('world.pendingDiscovery', null);
     }
 
     saveManager.autoSave();
@@ -272,6 +296,8 @@ window.App = {
   },
 
   afterDiscovery() {
+    _pendingDiscovery = null;
+    gameState.update('world.pendingDiscovery', null);
     const next = _currentScenario ? scenarioRegistry.getNextScenario(_currentScenario.id) : null;
     if (next) {
       this.playScenario(next.id);
@@ -693,17 +719,21 @@ window.App = {
 
     const pScore = entry.pScore !== undefined ? entry.pScore : (entry.result?.player || 0);
     const aScore = entry.aScore !== undefined ? entry.aScore : (entry.result?.ai || 0);
+    const playerRaw = entry.playerChoice || entry.aiChoices?.['player'] || '?';
+    const playerLabel = (scenario.choices || []).find(c => c.id === playerRaw)?.label || playerRaw;
+    const aiRaw = entry.aiChoice || Object.values(entry.aiChoices || {})[0] || '?';
+    const aiLabel = (scenario.choices || []).find(c => c.id === aiRaw)?.label || aiRaw;
 
     content.innerHTML = `
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
         <div style="background: var(--bg-secondary); padding: 16px; border-radius: var(--radius-md);">
           <h4 style="color: var(--accent-blue); margin-bottom: 8px;">You</h4>
-          <div style="font-size: 1.2rem; font-weight: 600; color: var(--text-primary);">${entry.playerChoice || entry.aiChoices?.['player'] || '?'}</div>
+          <div style="font-size: 1.2rem; font-weight: 600; color: var(--text-primary);">${playerLabel}</div>
           <div style="color: var(--accent-green); font-size: 1.5rem; margin-top: 8px;">+${pScore}</div>
         </div>
         <div style="background: var(--bg-secondary); padding: 16px; border-radius: var(--radius-md);">
           <h4 style="color: var(--accent-red); margin-bottom: 8px;">AI</h4>
-          <div style="font-size: 1.2rem; font-weight: 600; color: var(--text-primary);">${entry.aiChoice || Object.values(entry.aiChoices || {})[0] || '?'}</div>
+          <div style="font-size: 1.2rem; font-weight: 600; color: var(--text-primary);">${aiLabel}</div>
           <div style="color: var(--accent-red); font-size: 1.5rem; margin-top: 8px;">+${aScore}</div>
         </div>
       </div>

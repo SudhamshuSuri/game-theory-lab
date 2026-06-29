@@ -467,6 +467,14 @@
   transform: translateY(-1px);
 }
 
+.concept-card.clickable {
+  cursor: pointer;
+}
+
+.concept-card.clickable:hover {
+  box-shadow: 0 0 20px rgba(212, 163, 115, 0.15);
+}
+
 .concept-card.locked {
   opacity: 0.4;
   filter: grayscale(0.8);

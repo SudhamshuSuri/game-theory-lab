@@ -26,6 +26,7 @@ export function render(screenName, data = {}) {
     case 'scenarioEditor': renderScenarioEditor(); break;
     case 'replay': renderReplay(data); break;
     case 'analytics': renderAnalyticsDashboard(); break;
+    case 'conceptDetail': renderConceptDetail(data.conceptId); break;
     default: renderTitle(); break;
   }
 }
@@ -278,10 +279,12 @@ function renderResults(data) {
       <div class="resources-delta" style="border-color: var(--accent-blue); background: rgba(58,106,200,0.05);">
         <h3>\u{1F916} What They Chose</h3>
         ${Object.entries(aiChoices).map(([agentId, choice]) => {
-          const name = agentId.charAt(0).toUpperCase() + agentId.slice(1);
+          const agentConfig = scenario.agents?.[agentId];
+          const name = agentConfig?.name || agentId.charAt(0).toUpperCase() + agentId.slice(1);
+          const label = (scenario.choices || []).find(c => c.id === choice)?.label || choice;
           return `
             <div style="font-size: 0.9rem; padding: 4px 0;">
-              <strong>${name}:</strong> <span style="color: var(--accent-gold);">${choice}</span>
+              <strong>${name}:</strong> <span style="color: var(--accent-gold);">${label}</span>
             </div>
           `;
         }).join('')}
@@ -414,10 +417,68 @@ function renderDiscovery(conceptId) {
   document.body.appendChild(overlay);
 }
 
+// ===================== CONCEPT DETAIL OVERLAY =====================
+function renderConceptDetail(conceptId) {
+  const concept = CONCEPTS[conceptId];
+  if (!concept) return;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'discovery-overlay';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="discovery-card">
+      <button class="btn-close" onclick="this.closest('.discovery-overlay').remove()" style="position:absolute;top:12px;right:16px;background:none;border:none;color:var(--text-muted);font-size:1.5rem;cursor:pointer;">\u2715</button>
+      <h2>\u{1F4DC} ${concept.name}</h2>
+      <div class="discovery-quote">${concept.quote}</div>
+      <div class="discovery-body">
+        <p>${concept.explanation}</p>
+        ${concept.realWorld ? `
+          <p><strong>In real life:</strong> ${concept.realWorld}</p>
+        ` : ''}
+        ${concept.payoffMatrix ? `
+          <div style="margin: 12px 0; overflow-x: auto;">
+            <table style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
+              <tr>
+                <td></td>
+                <td style="padding: 6px; border:1px solid var(--border-color); background: rgba(255,255,255,0.05); text-align:center;"><strong>${concept.payoffMatrix.cols[0]}</strong></td>
+                <td style="padding: 6px; border:1px solid var(--border-color); background: rgba(255,255,255,0.05); text-align:center;"><strong>${concept.payoffMatrix.cols[1]}</strong></td>
+              </tr>
+              <tr>
+                <td style="padding: 6px; border:1px solid var(--border-color); background: rgba(255,255,255,0.05);"><strong>${concept.payoffMatrix.rows[0]}</strong></td>
+                <td style="padding: 6px; border:1px solid var(--border-color); text-align:center;">${concept.payoffMatrix.values[0][0]}</td>
+                <td style="padding: 6px; border:1px solid var(--border-color); text-align:center;">${concept.payoffMatrix.values[0][1]}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px; border:1px solid var(--border-color); background: rgba(255,255,255,0.05);"><strong>${concept.payoffMatrix.rows[1]}</strong></td>
+                <td style="padding: 6px; border:1px solid var(--border-color); text-align:center;">${concept.payoffMatrix.values[1][0]}</td>
+                <td style="padding: 6px; border:1px solid var(--border-color); text-align:center;">${concept.payoffMatrix.values[1][1]}</td>
+              </tr>
+            </table>
+          </div>
+        ` : ''}
+        <div class="discovery-insight">${concept.insight}</div>
+      </div>
+      <button class="btn-discovery" onclick="this.closest('.discovery-overlay').remove()" style="background:var(--accent-blue);">Close \u2192</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
 // ===================== ENCYCLOPEDIA =====================
 function renderEncyclopedia() {
   const s = gameState.get();
-  const discovered = s.player.discoveries;
+  let discovered = s.player.discoveries;
+  if (discovered.length === 0) {
+    try {
+      const raw = localStorage.getItem('sovereign_save_auto');
+      if (raw) {
+        const autoSave = JSON.parse(raw);
+        if (autoSave.state?.player?.discoveries?.length) {
+          discovered = autoSave.state.player.discoveries;
+        }
+      }
+    } catch {}
+  }
   const allConcepts = Object.values(CONCEPTS).sort((a, b) => a.name.localeCompare(b.name));
 
   _appRoot.innerHTML = `
@@ -433,8 +494,9 @@ function renderEncyclopedia() {
       <div class="encyclopedia-grid">
         ${allConcepts.map(concept => {
           const isDiscovered = discovered.includes(concept.id);
+          const clickHandler = isDiscovered ? `onclick="App.showConceptDetail('${concept.id}')"` : '';
           return `
-            <div class="concept-card ${isDiscovered ? '' : 'locked'}">
+            <div class="concept-card ${isDiscovered ? 'clickable' : 'locked'}" ${clickHandler}>
               <div class="concept-name">${isDiscovered ? '\u{1F4DC}' : '\u{1F512}'} ${concept.name}</div>
               <div class="concept-desc">${isDiscovered ? concept.explanation.substring(0, 100) + '...' : '???'}</div>
               ${isDiscovered && concept.insight ? `
