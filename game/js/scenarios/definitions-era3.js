@@ -43,6 +43,48 @@ scenarioRegistry.register({
     }
     return 'You fortified the pass. The 100 gold cost is insurance: regardless of Varn\'s true strength, your position is secure. This is the "maximin" approach — maximize the minimum possible payoff. When uncertainty is high and the downside of being wrong is severe, the safe choice is optimal. This is analogous to buying insurance: you pay a premium to eliminate downside risk, even if the expected value is negative. ' + payoffTable;
   },
+  customResolve: (playerChoice) => {
+    const varnIsStrong = Math.random() < 0.5;
+
+    const scoutCorrect = Math.random() < 0.7;
+    const scoutSays = scoutCorrect ? (varnIsStrong ? 'strong' : 'weak') : (varnIsStrong ? 'weak' : 'strong');
+
+    let outcome, score, narrative, resourceChanges;
+
+    if (playerChoice === 'attack') {
+      if (varnIsStrong) {
+        outcome = 'defeat'; score = 1;
+        narrative = `Your scouts reported Varn as ${scoutSays}, but he was strong. Your preemptive attack was crushed.`;
+        resourceChanges = { military: -80, gold: -50 };
+      } else {
+        outcome = 'victory'; score = 9;
+        narrative = `Your scouts reported Varn as ${scoutSays}. You struck fast — his weak army crumbled.`;
+        resourceChanges = { military: 30, gold: 100, influence: 20 };
+      }
+    } else if (playerChoice === 'negotiate') {
+      if (varnIsStrong) {
+        outcome = 'defeat'; score = 2;
+        narrative = `Your scouts reported Varn as ${scoutSays}, but he was strong. While you talked, his army crossed the mountains.`;
+        resourceChanges = { military: -30, gold: -50, reputation: -15 };
+      } else {
+        outcome = 'victory'; score = 7;
+        narrative = `Your scouts reported Varn as ${scoutSays}. Both sides sent negotiators — peace secured.`;
+        resourceChanges = { gold: -20, influence: 25, reputation: 10 };
+      }
+    } else {
+      if (varnIsStrong) {
+        outcome = 'mixed'; score = 5;
+        narrative = `Your scouts reported Varn as ${scoutSays}. You fortified — his strong army could not break through.`;
+        resourceChanges = { gold: -100, military: 10 };
+      } else {
+        outcome = 'mixed'; score = 4;
+        narrative = `Your scouts reported Varn as ${scoutSays}. You fortified against a weak army that never intended to attack. Safe, but costly.`;
+        resourceChanges = { gold: -100 };
+      }
+    }
+
+    return { outcome, score, narrative, resourceChanges, relationshipChanges: {} };
+  },
   agents: {
     varn: { personality: 'deceptive', name: 'General Varn' },
   },
@@ -78,6 +120,20 @@ scenarioRegistry.register({
       return 'You accepted a 10-gold token gift. Both the wealthy merchant (who could afford 200) and the poor adventurer (who can barely afford 10) can send this signal. The signal conveys NO information — it doesn\'t separate the types. In signaling theory, this is a "pooling equilibrium": both types send the same signal, so you learn nothing. The result: you may have granted a charter to an imposter. Real-world example: nice business cards, a professional website, and a suit — anyone can have these, so they don\'t signal real financial substance. Lesson: cheap talk is cheap precisely because it costs the same for everyone. Information is revealed only by differential cost.';
     }
     return 'You accepted a pure promise with no gift required. Every merchant — wealthy and destitute alike — makes the same claims. You\'ve learned nothing. This is the ultimate "pooling equilibrium": all types say the same thing because saying it costs nothing. In the worst case, you grant the charter to an imposter who has no wealth, no trade network, and no ability to deliver. Real-world parallel: interview candidates who all claim to be "hardworking and passionate" — since everyone says it, it conveys nothing. The lesson: if a signal costs nothing to send, it conveys no information. Information is revealed through costly actions, not cheap words.';
+  },
+  customResolve: (playerChoice) => {
+    const merchantWealthy = Math.random() < 0.5;
+    switch (playerChoice) {
+      case 'demand_costly':
+        if (merchantWealthy) {
+          return { outcome: 'victory', score: 8, narrative: 'The wealthy merchant pays the 200-gold gift without hesitation. The charter is granted to a genuinely wealthy partner.', resourceChanges: { gold: -200, influence: 30 }, relationshipChanges: {} };
+        }
+        return { outcome: 'mixed', score: 4, narrative: 'The merchant cannot afford the 200-gold gift. You have successfully screened out an imposter. No charter granted, but no harm done.', resourceChanges: {}, relationshipChanges: {} };
+      case 'accept_cheap':
+        return { outcome: 'defeat', score: 2, narrative: 'The token gift reveals nothing. You may have granted a charter to an imposter with no real wealth.', resourceChanges: { gold: 10, reputation: -10 }, relationshipChanges: {} };
+      default:
+        return { outcome: 'defeat', score: 1, narrative: 'You accepted a pure promise with no proof. Every claimant says the same thing. You likely granted a charter to an imposter.', resourceChanges: { gold: -50, reputation: -15 }, relationshipChanges: {} };
+    }
   },
   agents: {
     zephyr: { personality: 'deceptive', name: 'Merchant Zephyr' },
@@ -115,6 +171,18 @@ scenarioRegistry.register({
       probation: 'The probationary period worked. By the end of the first month, the incompetents had produced unusable designs, while the true architect produced excellent work. Probation is costly (you paid salary to everyone for a month) but it is the most reliable screen because it directly observes productive output. This is the "gold standard" of screening: let actual work reveal actual ability. The cost is the payment to the unproductive workers during the trial. In signaling theory: the probation period is a "counter-signal" — instead of making the candidate send a costly signal, you (the principal) bear a cost to reveal their type.',
     };
     return insights[choice] || 'Screening is the art of designing a test that separates types. The key: the test must impose a cost that low-quality types cannot afford to pay, whether that cost is effort, time, money, or demonstrated skill.';
+  },
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'hard_test':
+        return { outcome: 'victory', score: 8, narrative: 'The rigorous design challenge separated the candidates. You hired a true master architect.', resourceChanges: { gold: -50, influence: 30 }, relationshipChanges: {} };
+      case 'probation':
+        return { outcome: 'victory', score: 7, narrative: 'The probationary period worked. Actual work revealed the true architect. Costly but reliable.', resourceChanges: { gold: -100, influence: 25 }, relationshipChanges: {} };
+      case 'easy_test':
+        return { outcome: 'defeat', score: 2, narrative: 'The easy test revealed nothing. You hired an incompetent who cannot design a load-bearing wall.', resourceChanges: { gold: -80, reputation: -10 }, relationshipChanges: {} };
+      default:
+        return { outcome: 'defeat', score: 3, narrative: 'The interview was pleasant but uninformative. Confidence is not competence. You hired poorly.', resourceChanges: { gold: -30, reputation: -5 }, relationshipChanges: {} };
+    }
   },
   agents: {
     mira: { personality: 'deceptive', name: 'Candidate Mira' },
@@ -234,6 +302,23 @@ scenarioRegistry.register({
     }
     return 'You expelled Ambassador Silas. Safe but costly. You damaged diplomatic relations (-2) and lost the potential trade benefits. In Bayesian terms, you chose the "maximin" strategy — minimize the maximum possible loss — rather than calculating expected value. This is the conservative approach: when uncertainty is high and the downside of being wrong is severe, expelling the ambassador is defensible. But it also means you never learn his true type — you forfeit the information that his future behavior would have revealed. In game theory, this is the cost of type 1 errors (false positives) — you treat a genuine diplomat as a spy and lose the benefits of cooperation. ' + bayesianFramework;
   },
+  customResolve: (playerChoice) => {
+    const isSpy = Math.random() < 0.4;
+    switch (playerChoice) {
+      case 'trust':
+        if (isSpy) {
+          return { outcome: 'defeat', score: 1, narrative: 'Ambassador Silas was a spy. Your military plans are now compromised. Trusting without verification was a gamble that failed.', resourceChanges: { influence: -30, reputation: -15 }, relationshipChanges: {} };
+        }
+        return { outcome: 'victory', score: 8, narrative: 'Ambassador Silas was genuine. You gained a valuable trade agreement. Trust paid off.', resourceChanges: { gold: 100, influence: 20 }, relationshipChanges: {} };
+      case 'investigate':
+        if (isSpy) {
+          return { outcome: 'victory', score: 7, narrative: 'Your investigation caught Ambassador Silas red-handed. The false intelligence reached enemy hands, confirming his nature. You expelled him and gained valuable counter-intelligence.', resourceChanges: { gold: -50, influence: 15, reputation: 15 }, relationshipChanges: {} };
+        }
+        return { outcome: 'mixed', score: 5, narrative: 'Your investigation cleared Ambassador Silas. He is genuine. The 50 gold cost was the price of certainty — you can now negotiate the trade deal with confidence.', resourceChanges: { gold: -50, influence: 10 }, relationshipChanges: {} };
+      default:
+        return { outcome: 'mixed', score: 3, narrative: 'You expelled Ambassador Silas. Safe, but you damaged relations and lost the potential trade benefits. You will never know his true type.', resourceChanges: { influence: -15, reputation: -5 }, relationshipChanges: {} };
+    }
+  },
   agents: {
     silas: { personality: 'deceptive', name: 'Ambassador Silas' },
   },
@@ -270,6 +355,23 @@ scenarioRegistry.register({
       return 'You offered 110 gold — the average of a good horse (200) and a lemon (20). Borin accepted immediately. You almost certainly bought a lemon. Here\'s why: the owner of a good horse (worth 200) would never sell for 110 — that\'s a 90 gold loss. Only the owner of a lemon (worth 20) would be thrilled to get 110 — a 90 gold profit. This is the core insight of Akerlof\'s "Market for Lemons": when buyers can\'t distinguish quality, the market price reflects average quality, which drives high-quality sellers away, which lowers average quality further, which lowers the price further — a "death spiral" that can destroy the market entirely. This is why bad money drives out good (Gresham\'s Law) and why poorly regulated markets fill with low-quality goods.';
     }
     return 'You walked away. The market failed — a potentially mutually beneficial transaction (you want a horse, Borin wants to sell) didn\'t happen because of information asymmetry. You couldn\'t trust the quality, so you refused to participate. This market failure is the central result of adverse selection theory: asymmetric information can destroy otherwise efficient markets. Real-world examples: the 2008 financial crisis (nobody knew which mortgage-backed securities were toxic), health insurance markets (sick people buy more insurance, driving up prices for everyone), online dating (people exaggerate their qualities). The lesson: when information asymmetry is severe, markets can collapse. Mechanisms like warranties, certificates, and third-party verification are essential to keep markets functioning.';
+  },
+  customResolve: (playerChoice) => {
+    const horseIsGood = Math.random() < 0.5;
+    switch (playerChoice) {
+      case 'offer_warranty':
+        if (horseIsGood) {
+          return { outcome: 'victory', score: 8, narrative: 'Borin accepts the warranty gladly. The horse is sound — a fair deal for a quality animal.', resourceChanges: { gold: -200, population: 10 }, relationshipChanges: { borin: 10 } };
+        }
+        return { outcome: 'mixed', score: 4, narrative: 'Borin hesitates at the warranty demand and refuses. The horse is a lemon — you successfully screened out a bad purchase.', resourceChanges: {}, relationshipChanges: { borin: -5 } };
+      case 'sell_as_is':
+        if (horseIsGood) {
+          return { outcome: 'mixed', score: 5, narrative: 'Borin accepts 110 gold. By chance you got a decent horse — but the owner of a good horse should never have sold at this price. Luck, not strategy.', resourceChanges: { gold: -110, population: 5 }, relationshipChanges: {} };
+        }
+        return { outcome: 'defeat', score: 2, narrative: 'Borin accepts immediately. You bought a lemon. This is adverse selection in action: only bad horses sell at the average price.', resourceChanges: { gold: -110, reputation: -5 }, relationshipChanges: { borin: -5 } };
+      default:
+        return { outcome: 'mixed', score: 3, narrative: 'You walked away. The market failed — information asymmetry prevented a potentially beneficial exchange.', resourceChanges: {}, relationshipChanges: {} };
+    }
   },
   agents: {
     borin: { personality: 'deceptive', name: 'Horse Trader Borin' },
@@ -316,6 +418,22 @@ scenarioRegistry.register({
     }
     return 'You retreated. The duel didn\'t happen. Zero points — safe but dishonorable. Your reputation suffers, and Draven is emboldened. In the sequential game, retreating is the safest individual choice but the worst collective outcome if both would have waited. This illustrates the "security" vs. "efficiency" tradeoff in games of conflict: retreat guarantees safety but forfeits all potential gains. ' + chickenPayoff;
   },
+  customResolve: (playerChoice, aiChoices) => {
+    const aiChoice = Object.values(aiChoices)[0];
+    if (playerChoice === 'seize') {
+      if (aiChoice === 'wait') {
+        return { outcome: 'victory', score: 8, narrative: 'You charged. Draven hesitated. You won the duel — first-mover advantage carried the day.', resourceChanges: { influence: 25, military: 10 }, relationshipChanges: { draven: -10 } };
+      }
+      return { outcome: 'defeat', score: 1, narrative: 'Both charged! Mutual catastrophe. Draven\'s recklessness met your aggression — the worst possible outcome.', resourceChanges: { military: -60, influence: -20, gold: -30 }, relationshipChanges: { draven: -20 } };
+    }
+    if (playerChoice === 'wait') {
+      if (aiChoice === 'seize') {
+        return { outcome: 'defeat', score: 3, narrative: 'You waited. Draven charged. You retreated and lost face. His first-mover commitment overwhelmed your caution.', resourceChanges: { influence: -15, reputation: -10 }, relationshipChanges: { draven: -5 } };
+      }
+      return { outcome: 'mixed', score: 5, narrative: 'Both waited. A tense standoff with no resolution. Safe but unsatisfying for both.', resourceChanges: {}, relationshipChanges: {} };
+    }
+    return { outcome: 'mixed', score: 2, narrative: 'You retreated. Safe but dishonorable. Draven is emboldened and your reputation suffers.', resourceChanges: { influence: -20, reputation: -15 }, relationshipChanges: { draven: -10 } };
+  },
   agents: {
     draven: { personality: 'riskSeeking', name: 'Champion Draven' },
   },
@@ -353,6 +471,20 @@ scenarioRegistry.register({
       return 'You proposed a non-binding "consultation" agreement. Queen Seraphine is disappointed but accepts. The alliance provides little actual protection: when the Northern tribes attack, you\'ll "consult" while your kingdom burns. This is a "pooling equilibrium": both committed allies and free riders would accept a weak, non-binding agreement because it costs nothing. The terms don\'t separate the types, so you learn nothing about Seraphine\'s true commitment. In the real world, weak alliances are often worthless — the League of Nations failed because its members had no binding commitment to act. Lesson: the strength of a commitment signal is proportional to its cost. Weak signals convey no information.';
     }
     return 'You refused the alliance. Queen Seraphine is offended; relations cool. The Northern tribes grow bolder seeing your division. You maintained independence but lost a potentially valuable ally. Without a credible commitment from either side, the cooperative venture (mutual defense) fails entirely. This is the tragedy of signaling failures: when signals are not credible or are misunderstood, mutually beneficial cooperation collapses. In the real world, this is why diplomacy is so delicate — the parties must find ways to credibly signal their intentions, and miscommunication can lead to conflict even when both sides genuinely want peace.';
+  },
+  customResolve: (playerChoice, aiChoices) => {
+    const aiChoice = Object.values(aiChoices)[0];
+    switch (playerChoice) {
+      case 'strong_alliance':
+        if (aiChoice === 'strong_alliance') {
+          return { outcome: 'victory', score: 9, narrative: 'Both sides commit 200 soldiers. A credible, binding mutual defense pact. The Northern tribes will think twice.', resourceChanges: { military: -200, influence: 40, gold: -50 }, relationshipChanges: { seraphine: 20 } };
+        }
+        return { outcome: 'mixed', score: 5, narrative: 'You proposed a strong alliance but Queen Seraphine\'s commitment is weaker. The pact is unbalanced — you bear more cost.', resourceChanges: { military: -200, influence: 15 }, relationshipChanges: { seraphine: 5 } };
+      case 'weak_alliance':
+        return { outcome: 'mixed', score: 4, narrative: 'A non-binding consultation agreement. Little actual protection, but no costly commitments either. A pooling equilibrium — no information revealed.', resourceChanges: { influence: 5 }, relationshipChanges: { seraphine: 5 } };
+      default:
+        return { outcome: 'defeat', score: 2, narrative: 'You refused the alliance. Queen Seraphine is offended. The Northern tribes grow bolder seeing your division.', resourceChanges: { military: -20, influence: -15 }, relationshipChanges: { seraphine: -20 } };
+    }
   },
   agents: {
     seraphine: { personality: 'trustBuilder', name: 'Queen Seraphine' },
@@ -392,6 +524,26 @@ scenarioRegistry.register({
       return 'You spent 50 gold to send scouts — a classic Bayesian information purchase. Your scouts report: they saw no army massing. You now update your beliefs: Kestrel was either lying or mistaken. You saved 100 gold in mobilization costs. The 50 gold verification cost is your "information premium" — the price of reducing uncertainty. In Bayesian terms, you paid 50 gold to transform a 60%-reliable source into a near-certain assessment. In the real world, this is why companies do due diligence before acquisitions, why doctors order tests before treatment, and why generals send patrols before committing troops. The expected value of information is the reduction in decision error multiplied by the cost of being wrong.';
     }
     return 'You ignored Kestrel\'s report. You saved 100 gold in mobilization cost. If the attack was a lie, you made the right call. If it was real, your kingdom is now vulnerable. ' + bayesian + ' Ignoring the report entirely is the "maximin" strategy (minimize worst-case loss: you lose at most 100 gold if you\'re wrong, vs. 100 gold + potential invasion if you mobilize for a false alarm). But it\'s also a missed opportunity: even an imperfect informant provides some information. The Bayesian approach is not to ignore or fully trust, but to update beliefs proportionally and act on the expected value. In the real world, intelligence agencies never fully trust or fully ignore a source — they maintain a "source reliability rating" and update it with each report, adjusting their confidence accordingly.';
+  },
+  customResolve: (playerChoice) => {
+    const attackReal = Math.random() < 0.5;
+    switch (playerChoice) {
+      case 'believe':
+        if (attackReal) {
+          return { outcome: 'victory', score: 7, narrative: 'Kestrel was right — the attack came at the full moon. Your army was prepared and the defense held.', resourceChanges: { gold: -100, military: 20, influence: 10 }, relationshipChanges: { kestrel: 10 } };
+        }
+        return { outcome: 'defeat', score: 2, narrative: 'Kestrel was wrong. You mobilized against a phantom threat, wasting resources and crying wolf.', resourceChanges: { gold: -100, reputation: -15 }, relationshipChanges: { kestrel: -10 } };
+      case 'verify':
+        if (attackReal) {
+          return { outcome: 'victory', score: 8, narrative: 'Your scouts confirmed the attack. You mobilized with certainty — the 50 gold verification cost was the price of confidence.', resourceChanges: { gold: -150, military: 20, influence: 15 }, relationshipChanges: { kestrel: 5 } };
+        }
+        return { outcome: 'mixed', score: 5, narrative: 'Your scouts found nothing. Kestrel\'s report was false. The 50 gold saved you from wasting 100 on a false mobilization.', resourceChanges: { gold: -50 }, relationshipChanges: { kestrel: -5 } };
+      default:
+        if (attackReal) {
+          return { outcome: 'defeat', score: 1, narrative: 'Kestrel was right, but you ignored him. The attack caught you completely unprepared.', resourceChanges: { military: -60, gold: -80, reputation: -20 }, relationshipChanges: { kestrel: -15 } };
+        }
+        return { outcome: 'mixed', score: 4, narrative: 'Kestrel was wrong and you saved mobilization cost. But relying on luck is not a strategy.', resourceChanges: {}, relationshipChanges: { kestrel: -5 } };
+    }
   },
   agents: {
     kestrel: { personality: 'deceptive', name: 'Informant Kestrel' },

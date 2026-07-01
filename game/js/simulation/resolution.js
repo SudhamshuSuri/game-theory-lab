@@ -24,6 +24,8 @@ export class ResolutionEngine {
         return this._resolveUltimatum(playerChoice, aiChoices, scenario);
       case 'auction':
         return this._resolveAuction(playerChoice, aiChoices, scenario);
+      case 'debt':
+        return this._resolveDebt(playerChoice, aiChoices, scenario);
       default:
         return this._resolveDefault(playerChoice, aiChoices, scenario);
     }
@@ -69,7 +71,7 @@ export class ResolutionEngine {
     const aiChoice = Object.values(aiChoices)[0];
     const { player, ai, narrative } = this.calcChicken(playerChoice, aiChoice);
     return {
-      outcome: player >= 4 ? 'victory' : player <= -5 ? 'defeat' : 'mixed',
+      outcome: player >= 4 ? 'victory' : player === 2 ? 'mixed' : 'defeat',
       score: player,
       narrative,
       resourceChanges: { gold: player * 15, military: Math.max(0, player * 2) },
@@ -258,6 +260,37 @@ export class ResolutionEngine {
         ? `You won the auction with a bid of ${playerBid}. Net gain: ${payoff}.`
         : `The AI won with a bid of ${aiBid}. You bid ${playerBid}. You keep your gold.`,
       resourceChanges: { gold: wins ? (10 - playerBid) * 10 : 0 },
+      relationshipChanges: {},
+    };
+  }
+
+  _resolveDebt(playerChoice, aiChoices, scenario) {
+    const aiChoice = Object.values(aiChoices)[0];
+    const playerCooperates = playerChoice === 'honor' || playerChoice === 'fair';
+    const aiCooperates = aiChoice === 'honor' || aiChoice === 'fair';
+
+    let goldChange = 0;
+    let narrative;
+
+    if (playerCooperates && aiCooperates) {
+      goldChange = 100;
+      narrative = 'Baron Marius makes a respectful payment. The honorable approach continues to work.';
+    } else if (playerCooperates && !aiCooperates) {
+      goldChange = 0;
+      narrative = 'Baron Marius refuses to pay. The relationship has soured beyond repair.';
+    } else if (!playerCooperates && aiCooperates) {
+      goldChange = 0;
+      narrative = 'Your aggressive demand offends Baron Marius. He refuses to pay and vows never to deal with you again.';
+    } else {
+      goldChange = 0;
+      narrative = 'Baron Marius refuses to pay. Your aggressive tactics have destroyed all trust.';
+    }
+
+    return {
+      outcome: goldChange > 0 ? 'victory' : 'defeat',
+      score: goldChange / 20,
+      narrative,
+      resourceChanges: { gold: goldChange },
       relationshipChanges: {},
     };
   }

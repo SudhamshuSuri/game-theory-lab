@@ -70,6 +70,19 @@ scenarioRegistry.register({
     { id: 'scissors', label: 'Play Scissors', description: 'Scissors beats Paper, loses to Rock. A single choice — predictable if repeated.', risk: 'medium', tags: ['medium'] },
   ],
   idealNote: 'The optimal strategy in Rock-Paper-Scissors is to play a uniform mixed strategy: each move with exactly 1/3 probability, independently each round. This is the unique Nash equilibrium of the game: at this mix, your opponent cannot exploit any pattern because there is no pattern to exploit. Any deterministic or biased strategy will eventually be detected and exploited by a learning opponent. The lesson: in zero-sum games with no pure-strategy equilibrium, the solution is a mixed strategy that makes you unpredictable. This applies to poker (bluffing at optimal frequency), sports (randomizing pitch types), and military strategy (randomizing patrol routes).',
+  customResolve: (playerChoice, aiChoices) => {
+    const aiChoice = Object.values(aiChoices)[0];
+    const beats = { rock: 'scissors', paper: 'rock', scissors: 'paper' };
+    const playerWon = beats[playerChoice] === aiChoice;
+    const aiWon = beats[aiChoice] === playerChoice;
+    if (playerWon) {
+      return { outcome: 'victory', score: 7, narrative: `Your ${playerChoice} beats their ${aiChoice}. By staying unpredictable, you outmaneuvered the pattern-learning opponent.`, resourceChanges: { influence: 15 }, relationshipChanges: {} };
+    }
+    if (aiWon) {
+      return { outcome: 'defeat', score: 2, narrative: `Your ${playerChoice} lost to their ${aiChoice}. The opponent read your pattern and countered.`, resourceChanges: { influence: -10 }, relationshipChanges: {} };
+    }
+    return { outcome: 'mixed', score: 4, narrative: `Draw. Both played ${playerChoice}. No progress, but no loss.`, resourceChanges: {}, relationshipChanges: {} };
+  },
   analyze: (choice, aiChoice, history) => {
     const hist = history || [];
     const totalRounds = hist.length + 1;
@@ -122,6 +135,16 @@ scenarioRegistry.register({
     { id: 'bourgeois', label: 'Submit Bourgeois Strategy', description: 'Fight as owner, share as intruder. Respects property rights. The most successful known strategy.', risk: 'low', tags: ['cooperate', 'safe'] },
   ],
   idealNote: 'The Bourgeois strategy is the most successful in the classic Hawk-Dove game (Maynard Smith, 1982). Hawk does well when Doves are plentiful but crashes when facing other Hawks (fighting is costly). Dove does well against other Doves (peaceful sharing) but gets exploited by Hawks. Bourgeois does well against both: as owner, it fights (scaring Doves away); as intruder, it shares (avoiding costly Hawk-Hawk fights). Bourgeois is an "evolutionarily stable strategy" (ESS) — once established, no alternative strategy can invade. This explains why property rights emerge naturally in animal populations: the "resident wins" convention is evolutionarily stable.',
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'bourgeois':
+        return { outcome: 'victory', score: 8, narrative: 'Bourgeois — the evolutionarily stable strategy. No alternative strategy can invade. Property rights emerge naturally.', resourceChanges: { influence: 25 }, relationshipChanges: {} };
+      case 'dove':
+        return { outcome: 'mixed', score: 5, narrative: 'Dove — peaceful but invadable by Hawks. Unconditional cooperation is evolutionarily fragile.', resourceChanges: { influence: 10 }, relationshipChanges: {} };
+      default:
+        return { outcome: 'mixed', score: 4, narrative: 'Hawk — unstable. It dominates Doves but crashes when facing other Hawks. A volatile strategy.', resourceChanges: { influence: 5 }, relationshipChanges: {} };
+    }
+  },
   analyze: (choice, history) => {
     const gen = (history?.length || 0) + 1;
 
@@ -172,6 +195,18 @@ scenarioRegistry.register({
     { id: 'grand_coalition', label: 'Propose Grand Coalition', description: 'Propose all three kingdoms share power equally. No one is attacked. Peaceful but fragile.', risk: 'high', tags: ['high'] },
   ],
   idealNote: 'In a three-kingdom game, every two-kingdom alliance is a Nash equilibrium: the two allied kingdoms each prefer the status quo (they\'re winning), and the isolated kingdom cannot improve its position alone (it\'s outnumbered). The grand coalition is NOT a Nash equilibrium: any kingdom could secretly ally with another and improve its position by splitting the third. The insight: in three-player games, stable outcomes often involve coalitions that exclude someone. This is the logic of triadic power structures — the "balance of power" in international relations is essentially the search for stable coalition equilibria.',
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'ally_north':
+        return { outcome: 'victory', score: 8, narrative: 'You allied with the North against the East. A Nash equilibrium — you and the North both benefit, the East cannot improve alone.', resourceChanges: { military: 50, influence: 20 }, relationshipChanges: { north: 15 } };
+      case 'ally_east':
+        return { outcome: 'victory', score: 8, narrative: 'You allied with the East against the North. A Nash equilibrium — stable until a better offer emerges.', resourceChanges: { military: 50, influence: 20 }, relationshipChanges: { east: 15 } };
+      case 'neutral':
+        return { outcome: 'mixed', score: 4, narrative: 'Neutrality — safe but passive. You gain nothing while others may form alliances that threaten you.', resourceChanges: {}, relationshipChanges: {} };
+      default:
+        return { outcome: 'defeat', score: 2, narrative: 'The Grand Coalition is rejected. Not a Nash equilibrium — any two kingdoms can do better by allying against the third.', resourceChanges: { influence: -10 }, relationshipChanges: {} };
+    }
+  },
   analyze: (choice, aiChoice) => {
     if (choice === 'ally_north') {
       return 'You allied with the Northern Dominion against the East. Together you defeat the Eastern Alliance and partition their territory. You gain +3, North gains +3, East loses -5. Is this stable? The East now has no power. Could the North betray you and ally with the East? If North + East attacks you, North gets more (your territory) than they got from the original alliance (Eastern territory). This depends on the North\'s trustworthiness. In repeated games, reputation for reliability matters. The Nash equilibrium concept says: check if any player can do better by changing their choice alone. You and the North are both winning — neither wants to switch. The East would love to change things but can\'t alone. This IS a Nash equilibrium: two players winning, one losing, but the loser can\'t improve unilaterally.';
@@ -216,6 +251,18 @@ scenarioRegistry.register({
     { id: 'offer_200', label: 'Offer 200 Gold', description: 'Match her demand exactly. Guarantees she stays but captures zero surplus for you.', risk: 'low', tags: ['cooperate'] },
   ],
   idealNote: 'Offering 160 gold is the optimal play. It exceeds Elara\'s outside option (150), incentivizing her to stay, while keeping 40 gold of surplus for you. Offering 120 risks losing her (she leaves for 150). Offering 80 is insulting. Offering 200 gives all the surplus to her. The bargaining theory insight: the "negotiation range" is the gap between the two parties\' reservation prices (150 and whatever value Elara adds minus 80). Within this range, the exact price depends on bargaining power. Your BATNA (80 gold architect) and her BATNA (150 gold offer) define the negotiation zone. The better your BATNA, the lower you can negotiate. The key to good negotiation is improving your BATNA before you sit down.',
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'offer_160':
+        return { outcome: 'victory', score: 8, narrative: 'You offered 160 gold — above her 150 outside option. She accepts. You keep surplus while securing a world-class architect.', resourceChanges: { gold: -160, influence: 20 }, relationshipChanges: { elara: 15 } };
+      case 'offer_200':
+        return { outcome: 'mixed', score: 5, narrative: 'You offered 200 gold — her full demand. She accepts but you captured zero surplus. You left money on the table.', resourceChanges: { gold: -200, influence: 10 }, relationshipChanges: { elara: 10 } };
+      case 'offer_120':
+        return { outcome: 'defeat', score: 3, narrative: 'You offered 120 gold. Below her 150 reservation price. Elara likely leaves for the rival kingdom.', resourceChanges: { gold: -80, influence: -5 }, relationshipChanges: { elara: -10 } };
+      default:
+        return { outcome: 'defeat', score: 1, narrative: 'You offered 80 gold. Elara rejects immediately and takes the 150 offer from the neighboring kingdom. A failed negotiation.', resourceChanges: { gold: -80, influence: -10 }, relationshipChanges: { elara: -15 } };
+    }
+  },
   analyze: (choice) => {
     if (choice === 'offer_80') {
       return 'You offered 80 gold — what a lesser architect would cost. Elara rejects immediately and takes the 150 gold offer from the neighboring kingdom. You now have a lesser architect for 80 gold. But what did you lose? Elara\'s superior skills would have generated far more value for your kingdom. By lowballing, you failed to capture any of that value. The negotiation lesson: your BATNA (80 gold for a lesser architect) is your fallback, but it\'s also your weakness — it defines the floor of the negotiation zone. The surplus you could have shared with Elara is now lost entirely. Real-world parallel: companies that lowball highly skilled candidates often lose them to competitors who offer market rates. The cost is not just the salary difference but the lost productivity.';
@@ -259,6 +306,22 @@ scenarioRegistry.register({
     { id: 'demand_quarter', label: 'Demand 25 Units', description: 'Demand a quarter. Cede most of the territory for guaranteed peace.', risk: 'low', tags: ['cooperate'] },
   ],
   idealNote: 'Demand half is the optimal strategy against a rational opponent. Both sides want to avoid the cost of continued war (20 per year). A 50/50 split is the "focal point" — the most natural, salient division. In laboratory bargaining experiments, 50/50 splits are by far the most common agreement. The AI (a trustBuilder) is likely to accept half. Demanding 70 is risky: the AI may reject it (continuing war), and even if accepted, you leave the AI with only 30 — a deal they\'d resent and potentially undermine later. Demanding 25 is too generous — you leave 75 on the table unnecessarily. The Nash Bargaining Solution for symmetric players with equal fallback positions is exactly 50/50.',
+  customResolve: (playerChoice, aiChoices) => {
+    const aiChoice = Object.values(aiChoices)[0];
+    const playerDemand = playerChoice === 'demand_most' ? 70 : playerChoice === 'demand_half' ? 50 : 25;
+    const aiDemand = aiChoice === 'demand_most' ? 70 : aiChoice === 'demand_half' ? 50 : 25;
+    const peace = (playerDemand + aiDemand) <= 100;
+    if (!peace) {
+      if (playerChoice === 'demand_half') {
+        return { outcome: 'mixed', score: 4, narrative: `War continues! You offered a fair 50/50 split, but the AI demanded ${aiDemand}. Total ${playerDemand + aiDemand} > 100. The AI's stubbornness destroyed the peace — not your fault.`, resourceChanges: { gold: -40, military: -20 }, relationshipChanges: { seraphine: -10 } };
+      }
+      return { outcome: 'defeat', score: 1, narrative: `War continues! You demanded ${playerDemand}, AI demanded ${aiDemand}. Total ${playerDemand + aiDemand} > 100. Bargaining failure — both sides lose.`, resourceChanges: { gold: -40, military: -20 }, relationshipChanges: {} };
+    }
+    if (playerDemand >= 50) {
+      return { outcome: 'victory', score: 8, narrative: `Peace! You secured ${playerDemand} units. The 50/50 focal point holds — fair and stable.`, resourceChanges: { gold: 30, military: 10 }, relationshipChanges: { seraphine: 10 } };
+    }
+    return { outcome: 'mixed', score: 5, narrative: `Peace, but you only claimed ${playerDemand} units. You left territory on the table.`, resourceChanges: { gold: 15 }, relationshipChanges: { seraphine: 15 } };
+  },
   analyze: (choice, aiChoice) => {
     const playerDemand = choice === 'demand_most' ? 70 : choice === 'demand_half' ? 50 : 25;
     const aiDemand = aiChoice === 'demand_most' ? 70 : aiChoice === 'demand_half' ? 50 : 25;
@@ -307,6 +370,22 @@ scenarioRegistry.register({
     { id: 'random', label: 'Random (Chaotic)', description: 'Flip a coin each round. Unpredictable but strategically empty.', risk: 'high', tags: ['high'] },
   ],
   idealNote: 'Tit-for-Tat won Axelrod\'s original tournament and is the optimal all-around strategy. It is "nice" (never defects first), "provokable" (immediately punishes defection), "forgiving" (resumes cooperation when opponent does), and "clear" (predictable pattern). These four properties make it robust across all matchups. Generous TFT performs similarly but can avoid echo-chamber defection spirals with other TFT-like strategies. The lesson: in evolutionary tournaments, strategies that sustain mutual cooperation while defending against exploitation outperform purely aggressive or purely cooperative approaches.',
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'tit_for_tat':
+        return { outcome: 'victory', score: 9, narrative: 'Tit-for-Tat: the champion of Axelrod\'s tournament. Nice, provokable, forgiving, clear — the optimal IPD strategy.', resourceChanges: { influence: 30 }, relationshipChanges: {} };
+      case 'generous_tft':
+        return { outcome: 'victory', score: 8, narrative: 'Generous Tit-for-Tat: nearly as good as TFT. Forgiveness prevents grudge spirals in noisy environments.', resourceChanges: { influence: 25 }, relationshipChanges: {} };
+      case 'grim_trigger':
+        return { outcome: 'mixed', score: 6, narrative: 'Grim Trigger: strong against rational opponents but brittle. A single mistake triggers permanent defection.', resourceChanges: { influence: 15 }, relationshipChanges: {} };
+      case 'always_defect':
+        return { outcome: 'mixed', score: 5, narrative: 'Always Defect: wins individual rounds but loses the tournament. Ruthlessness is self-limiting.', resourceChanges: { influence: 10 }, relationshipChanges: {} };
+      case 'always_cooperate':
+        return { outcome: 'mixed', score: 4, narrative: 'Always Cooperate: exploited by Defect, cooperative with TFT. Blind trust is evolutionarily unstable.', resourceChanges: { influence: 5 }, relationshipChanges: {} };
+      default:
+        return { outcome: 'defeat', score: 1, narrative: 'Random: the worst performer. Chaos cannot sustain cooperation or exploit consistently.', resourceChanges: { influence: -10 }, relationshipChanges: {} };
+    }
+  },
   analyze: (choice) => {
     const results = {
       always_cooperate: 'Your Always Cooperate strategy enters the round-robin:\n\n' +
@@ -379,6 +458,16 @@ scenarioRegistry.register({
     { id: 'propose_random', label: 'Random Matching', description: 'Randomly assign partners. Simple but very unlikely to be stable.', risk: 'high', tags: ['high'] },
   ],
   idealNote: 'The Gale-Shapley deferred acceptance algorithm is the optimal choice. It always produces a stable matching in which no blocking pair exists. Furthermore, it produces the matching that is optimal for the proposing side (each proposer gets the best partner they could get in ANY stable matching). This algorithm and its insight — that stable matchings always exist and can be found efficiently — won Lloyd Shapley the 2012 Nobel Prize in Economics. It is used in real-world matching markets: the National Resident Matching Program (matching doctors to hospitals), school choice systems in New York and Boston, and college admissions.',
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'propose_rank':
+        return { outcome: 'victory', score: 9, narrative: 'Gale-Shapley deferred acceptance produces a stable matching — no blocking pairs exist. The proposing side gets optimal partners.', resourceChanges: { influence: 25 }, relationshipChanges: { beatrice: 15 } };
+      case 'propose_utility':
+        return { outcome: 'mixed', score: 4, narrative: 'Utility-maximizing matching is unstable. Blocking pairs will unravel the system — stability trumps total utility.', resourceChanges: { influence: 5 }, relationshipChanges: {} };
+      default:
+        return { outcome: 'defeat', score: 1, narrative: 'Random matching is almost certainly unstable. Without deliberate design, matching markets fail.', resourceChanges: { influence: -10 }, relationshipChanges: {} };
+    }
+  },
   analyze: (choice) => {
     if (choice === 'propose_rank') {
       return 'You used the Gale-Shapley algorithm: men propose to their top choice; women tentatively accept the best offer but can upgrade later. The result: a stable matching where no blocking pair exists. This matching is "men-optimal" — each man gets the best partner they could get in any stable matching. But it\'s "women-pessimal" — each woman gets the worst partner possible in any stable matching (because women only choose among offers, and men propose in preference order). The key insight: stable matchings always exist! This was a revolutionary result — before Gale and Shapley, economists weren\'t sure stable matchings existed in all preference profiles. The algorithm is "strategy-proof" for the proposing side: men cannot benefit by misrepresenting their preferences. Real-world use: the National Resident Matching Program has used this algorithm since the 1950s to match 40,000+ doctors to residency programs each year. Lloyd Shapley and Alvin Roth won the 2012 Nobel Prize for this work.';
@@ -418,6 +507,25 @@ scenarioRegistry.register({
     { id: 'diplomacy', label: 'Propose Mutual Disarmament', description: 'Send diplomats to negotiate a mutual disarmament treaty with verification. Attempt to escape the dilemma through communication and binding commitments.', risk: 'medium', tags: ['cooperate'] },
   ],
   idealNote: 'Proposing mutual disarmament with verification is the optimal move. Unilateral disarmament is naive (vulnerable to exploitation). Unilateral arming is costly and perpetuates the security dilemma. The path out of the arms race requires BOTH communication (to coordinate on the cooperative outcome) AND verification (to ensure compliance). This is why real-world arms control treaties (SALT, START, INF) include verification mechanisms like on-site inspections and satellite monitoring. The security dilemma isn\'t a Prisoner\'s Dilemma when communication and enforcement are possible — it becomes a coordination game where both prefer mutual disarmament to mutual armament.',
+  customResolve: (playerChoice, aiChoices) => {
+    const aiChoice = Object.values(aiChoices)[0];
+    if (playerChoice === 'diplomacy' && aiChoice === 'diplomacy') {
+      return { outcome: 'victory', score: 9, narrative: 'Mutual diplomacy succeeds! A binding treaty with verification transforms the security dilemma into cooperation.', resourceChanges: { gold: 100, military: -30, influence: 30 }, relationshipChanges: { thorne: 15 } };
+    }
+    if (playerChoice === 'disarm' && aiChoice === 'disarm') {
+      return { outcome: 'victory', score: 8, narrative: 'Both disarm. Peace dividends flow — military budgets redirected to prosperity. The Pareto-optimal outcome.', resourceChanges: { gold: 80, military: -50, influence: 20 }, relationshipChanges: {} };
+    }
+    if (playerChoice === 'disarm' && aiChoice === 'arm') {
+      return { outcome: 'defeat', score: 1, narrative: 'You disarmed while AI armed. Vulnerable and exploited — the sucker\'s payoff. Disarmament must be mutual.', resourceChanges: { gold: 10, military: -30, influence: -15 }, relationshipChanges: { thorne: -15 } };
+    }
+    if (playerChoice === 'diplomacy') {
+      return { outcome: 'defeat', score: 2, narrative: 'You proposed diplomacy but the AI armed. Your overture was seen as weakness. Pure diplomacy needs deterrent backing.', resourceChanges: { military: -10, influence: -10 }, relationshipChanges: { thorne: -10 } };
+    }
+    if (playerChoice === 'arm' && aiChoice === 'disarm') {
+      return { outcome: 'mixed', score: 5, narrative: 'You armed while AI disarmed. Military superiority, but at great cost. An unstable outcome — the AI will likely rearm.', resourceChanges: { gold: -50, military: 40 }, relationshipChanges: { thorne: -5 } };
+    }
+    return { outcome: 'mixed', score: 3, narrative: 'Both arm. Mutual deterrence at enormous cost. The tragic Nash equilibrium of the security dilemma.', resourceChanges: { gold: -60, military: 20 }, relationshipChanges: {} };
+  },
   analyze: (choice, aiChoice) => {
     if (choice === 'arm') {
       if (aiChoice === 'arm') {
@@ -471,6 +579,18 @@ scenarioRegistry.register({
     { id: 'minimal', label: 'Minimal Charter', description: 'No central authority beyond a forum for discussion. Zero taxes, no military commitment, no trade rules. A loose alliance in name only.', risk: 'high', tags: ['defect', 'high'] },
   ],
   idealNote: 'The Federal Constitution is the optimal mechanism design. It balances weighted voting (proportional to population, solving the "one-kingdom-one-vote vs. majority tyranny" problem), moderate taxes (providing public goods without overburdening), proportional military commitment (burden-sharing proportional to capacity), and open trade (creating mutual interdependence that makes conflict costly). The Confederal approach is too weak to solve collective action problems. The Unitary approach concentrates too much power. The Minimal charter is an alliance in name only. The lesson: mechanism design is about creating rules that align individual incentives with collective welfare. The Federal approach does this by "making everyone have skin in the game" through proportional contributions and proportional voice.',
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'federal':
+        return { outcome: 'victory', score: 9, narrative: 'Federal Constitution: weighted voting, moderate taxes, proportional military, open trade. Incentive-compatible mechanism design that aligns individual and collective welfare.', resourceChanges: { gold: 80, influence: 40, military: 20 }, relationshipChanges: { ariana: 15 } };
+      case 'confederal':
+        return { outcome: 'mixed', score: 5, narrative: 'Confederal: unanimous veto protects sovereignty but creates gridlock. Too weak to solve collective action problems.', resourceChanges: { influence: 10 }, relationshipChanges: {} };
+      case 'unitary':
+        return { outcome: 'mixed', score: 4, narrative: 'Unitary: one-kingdom-one-vote creates majority tyranny. High taxes and mandatory commitments breed resentment.', resourceChanges: { military: 30, influence: -5 }, relationshipChanges: {} };
+      default:
+        return { outcome: 'defeat', score: 1, narrative: 'Minimal Charter: an alliance in name only. No public goods, no collective security, no trade surplus. The state of nature.', resourceChanges: {}, relationshipChanges: {} };
+    }
+  },
   analyze: (choice) => {
     if (choice === 'federal') {
       return 'You chose the Federal Constitution. Weighted voting by population: large kingdoms have more say, but small kingdoms still have a voice (they can form coalitions). Moderate 10% taxes fund shared public goods: a standing peacekeeping force, a unified road network, and a dispute resolution court. Proportional military commitment: each kingdom contributes soldiers proportional to its population, so no one is overburdened. Open trade: all kingdoms trade freely, creating economic interdependence that raises the cost of conflict.\n\n' +

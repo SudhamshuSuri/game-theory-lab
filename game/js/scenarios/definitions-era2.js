@@ -120,6 +120,16 @@ scenarioRegistry.register({
     };
     return insights[choice] || 'Moral hazard arises when someone makes decisions but doesn\'t bear the full consequences. The solution is always some combination of monitoring and incentive alignment.';
   },
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'oversight':
+        return { outcome: 'victory', score: 8, narrative: 'Salary with oversight balances incentives and monitoring. Vex collects efficiently without overtaxing — the optimal solution to moral hazard.', resourceChanges: { gold: 50, population: 20 }, relationshipChanges: { vex: 5 } };
+      case 'salary':
+        return { outcome: 'mixed', score: 5, narrative: 'Vex collects on a fixed salary. No overtaxing, but no incentive to collect efficiently. Suboptimal but safe.', resourceChanges: { gold: -100, population: 10 }, relationshipChanges: { vex: 0 } };
+      default:
+        return { outcome: 'defeat', score: 2, narrative: 'Tax farming creates pure moral hazard. Vex overtaxes mercilessly, sparking resentment and rebellion. The short-term gold is not worth the long-term damage.', resourceChanges: { gold: 1000, population: -100, reputation: -15 }, relationshipChanges: { vex: -10 } };
+    }
+  },
   agents: {
     vex: { personality: 'greedy', name: 'Collector Vex' },
   },
@@ -155,6 +165,16 @@ scenarioRegistry.register({
       return 'You sent a commoner in disguise. King Aldric discovers the deception. Your reputation is shattered. Any future promise you make will be worthless — once you\'ve faked a hostage, no one will believe your commitments. This illustrates a critical point about signaling: faking works only if undetected, and the cost of exposure often exceeds the value of deception. In game theory terms, a non-credible commitment is worse than no commitment at all.';
     }
     return 'You refused the hostage exchange. No peace treaty is signed. Both kingdoms remain in cold war. Without a credible commitment mechanism, neither side trusts the other enough to disarm. This is the tragedy of commitment problems: both parties may genuinely want peace, but without a way to make promises stick, they remain locked in conflict. In real life, this is why treaties include enforcement mechanisms, why contracts require collateral, and why marriages involve public vows — all are credibility devices.';
+  },
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'send_real':
+        return { outcome: 'victory', score: 8, narrative: 'You sent a royal cousin. King Aldric recognizes your credible commitment. Peace is established on a foundation of mutual trust.', resourceChanges: { influence: 20 }, relationshipChanges: { aldric: 15 } };
+      case 'send_fake':
+        return { outcome: 'defeat', score: 1, narrative: 'King Aldric discovers your deception. Your reputation is shattered. Any future promise you make will be worthless.', resourceChanges: { influence: -30, reputation: -20 }, relationshipChanges: { aldric: -30 } };
+      default:
+        return { outcome: 'mixed', score: 3, narrative: 'You refused the hostage exchange. No peace treaty is signed. Both kingdoms remain in cold war.', resourceChanges: { influence: -5 }, relationshipChanges: {} };
+    }
   },
   agents: {
     aldric: { personality: 'trustBuilder', name: 'King Aldric' },
@@ -320,6 +340,11 @@ scenarioRegistry.register({
   type: 'debt',
   multiRound: true,
   totalRounds: 5,
+  evaluateOutcome: (totalDelta) => {
+    if (totalDelta >= 500) return 'victory';
+    if (totalDelta > 0) return 'mixed';
+    return 'defeat';
+  },
   setup: (state) => {
     state.player.resources.gold = 300;
   },
@@ -421,6 +446,21 @@ scenarioRegistry.register({
         'Total: ~83 points. Random is the worst-performing strategy. It cannot sustain cooperation (because it randomly defects, triggering retaliation) but also can\'t consistently exploit (because it randomly cooperates). It lacks any strategic signal. Lesson: randomness is not a strategy. Even imperfect but principled approaches (like TFT) outperform pure chaos because they send a signal that others can adapt to.',
     };
     return results[choice] || 'The tournament demonstrates a profound insight: in repeated games, the best strategies are nice (start cooperative), provokable (punish defection), forgiving (resume cooperation), and clear (predictable). This is why Tit-for-Tat dominated Axelrod\'s tournaments.';
+  },
+  customResolve: (playerChoice) => {
+    const outcomes = {
+      always_cooperate: { outcome: 'mixed', score: 5, narrative: '~105 points. Always Cooperate is exploited by defectors but does well against other cooperators. In a mixed population, unconditional cooperation is vulnerable.' },
+      always_defect: { outcome: 'mixed', score: 6, narrative: '~113 points. Always Defect wins individual rounds but triggers permanent feuds with reciprocal strategies. Short-term gains, long-term losses.' },
+      tit_for_tat: { outcome: 'victory', score: 7, narrative: '~117 points. Tit-for-Tat won Axelrod\'s tournaments. It maximizes cooperation with other cooperators while protecting itself from defectors.' },
+      grim_trigger: { outcome: 'mixed', score: 6, narrative: '~111 points. Grim Trigger nearly matches TFT against cooperators, but brittleness against random defection costs it.' },
+      random: { outcome: 'defeat', score: 3, narrative: '~83 points. Random is the worst strategy. It cannot sustain cooperation nor consistently exploit. Randomness is not a strategy.' },
+    };
+    const result = outcomes[playerChoice] || outcomes.tit_for_tat;
+    return {
+      ...result,
+      resourceChanges: {},
+      relationshipChanges: {},
+    };
   },
   agents: {},
 });

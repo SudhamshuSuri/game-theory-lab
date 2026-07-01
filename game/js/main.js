@@ -220,10 +220,10 @@ window.App = {
 
         result = {
           ...result,
-          outcome: totalDelta > 5 ? 'victory' : totalDelta > 0 ? 'mixed' : 'defeat',
+          outcome: def.evaluateOutcome ? def.evaluateOutcome(totalDelta, history) : (totalDelta > 5 ? 'victory' : totalDelta > 0 ? 'mixed' : 'defeat'),
           narrative: totalDelta > 0
-            ? `After ${def.totalRounds} seasons, your trade route ${totalDelta > 10 ? 'flourished' : 'survived'}. Net gain: ${totalDelta} gold.`
-            : `After ${def.totalRounds} seasons, the trade route collapsed. Net loss: ${totalDelta} gold.`,
+            ? `After ${def.totalRounds} rounds, net gain: ${totalDelta} gold.`
+            : `After ${def.totalRounds} rounds, net loss: ${totalDelta} gold.`,
         };
 
         this._completeScenario(def, choiceId, aiChoices, result, history, true);

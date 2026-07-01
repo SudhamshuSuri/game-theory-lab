@@ -52,6 +52,19 @@ scenarioRegistry.register({
       aiBid > spiceValue ? ', overvaluing the spice and suffering the curse they would have if they\'d won.' : ', also staying rational.'
     } Your strategy of bidding your true value and stopping is the optimal approach for a common-value English auction.`;
   },
+  customResolve: (playerChoice, aiChoices) => {
+    const playerBid = parseInt(playerChoice);
+    const aiBid = parseInt(Object.values(aiChoices)[0] || '0');
+    const spiceValue = 7;
+    const won = playerBid >= aiBid;
+    if (won && playerBid > spiceValue) {
+      return { outcome: 'defeat', score: 2, narrative: `You won with ${playerBid} but overpaid for spice worth ${spiceValue}. The winner's curse: you won the auction but lost gold.`, resourceChanges: { gold: -playerBid }, relationshipChanges: {} };
+    }
+    if (won) {
+      return { outcome: 'victory', score: 8, narrative: `You won with ${playerBid} — below the spice's ${spiceValue} value. A disciplined bid that avoided the winner's curse.`, resourceChanges: { gold: -playerBid, influence: 20 }, relationshipChanges: {} };
+    }
+    return { outcome: 'victory', score: 7, narrative: `You bid ${playerBid} and let the AI overpay at ${aiBid}. By walking away, you avoided the winner's curse entirely.`, resourceChanges: {}, relationshipChanges: { hark: -5 } };
+  },
   agents: {
     hark: { personality: 'greedy', name: 'Merchant Lord Hark' },
   },
@@ -98,6 +111,17 @@ scenarioRegistry.register({
 
     return `You won with ${playerBid}. AI bid ${aiBid}. Your profit: ${playerProfit} gold. You bid ${playerBid}, shaded ${trueValue - playerBid} below true value. This is the art of first-price auctions: bid high enough to win, low enough to profit. Your bid of ${playerBid} beat the AI's ${aiBid}. The ${trueValue - playerBid} gold you left on the table is your "bid shading" — the discount you gave yourself for winning. In equilibrium, optimal shading depends on the number of bidders (more bidders = less shade) and your risk tolerance. Real-world application: Treasury bill auctions use this format, and bidders carefully study competitors' past behavior to calibrate their shade.`;
   },
+  customResolve: (playerChoice, aiChoices) => {
+    const playerBid = parseInt(playerChoice);
+    const aiBid = parseInt(Object.values(aiChoices)[0] || '0');
+    const trueValue = 9;
+    const won = playerBid >= aiBid;
+    if (won) {
+      const profit = trueValue - playerBid;
+      return { outcome: profit > 0 ? 'victory' : profit === 0 ? 'mixed' : 'defeat', score: Math.max(1, profit + 3), narrative: profit > 0 ? `You won with ${playerBid} and earned ${profit} gold profit. Optimal bid shading.` : profit === 0 ? `You won with ${playerBid} — full value, zero profit.` : `You won with ${playerBid} but overpaid. The winner's curse.`, resourceChanges: { gold: -playerBid }, relationshipChanges: {} };
+    }
+    return { outcome: 'mixed', score: 4, narrative: `You bid ${playerBid}. The AI won at ${aiBid}. You preserved your gold — discretion is the better part of valor.`, resourceChanges: {}, relationshipChanges: {} };
+  },
   agents: {
     valerius: { personality: 'greedy', name: 'Merchant Valerius' },
   },
@@ -137,7 +161,7 @@ scenarioRegistry.register({
     const profit = won ? trueValue - pricePaid : 0;
 
     if (choice === '7') {
-      return `You bid 7 (truthful). AI bid ${aiBid}. ${won ? `You won! Pay the second price: ${pricePaid}. Profit: ${profit}.` : 'AI won.'} Truthful bidding dominates in Vickrey auctions. Why? Your bid only determines whether you WIN — it doesn't affect what you PAY (the second price determines that). So bidding below true value only reduces your chance of winning without improving your price. Bidding above true value risks paying more than the item is worth. The only rational bid is exactly what you value the item at. This mechanism is used in eBay auctions, Google's IPO, and spectrum auctions. Vickrey won the Nobel Prize for showing that second-price sealed-bid auctions align incentives with honesty.`;
+      return `You bid 7 (truthful). AI bid ${aiBid}. ${won ? `You won! Pay the second price: ${pricePaid}. Profit: ${profit}.` : 'AI won.'} Truthful bidding dominates in Vickrey auctions. Why? Your bid only determines whether you WIN — it doesn't affect what you PAY (the second price determines that). So bidding below true value only reduces your chance of winning without improving your price. Bidding above true value risks paying more than the item is worth. The only rational bid is exactly what you value the item at. This mechanism is used in eBay's proxy bidding, Google's IPO, and spectrum auctions. Vickrey won the Nobel Prize for showing that second-price sealed-bid auctions align incentives with honesty.`;
     }
 
     if (parseInt(choice) < 7) {
@@ -155,6 +179,19 @@ scenarioRegistry.register({
     }
 
     return 'In a Vickrey auction, the optimal strategy is simple: bid your true value. The auction structure makes honesty the dominant strategy — a rare and elegant property in mechanism design. This is why Vickrey auctions are considered the gold standard for efficiency.';
+  },
+  customResolve: (playerChoice, aiChoices) => {
+    const playerBid = parseInt(playerChoice);
+    const aiBid = parseInt(Object.values(aiChoices)[0] || '0');
+    const trueValue = 7;
+    const secondPrice = Math.min(playerBid, aiBid);
+    const won = playerBid >= aiBid;
+    if (won) {
+      const pricePaid = secondPrice;
+      const profit = trueValue - pricePaid;
+      return { outcome: profit > 0 ? 'victory' : profit === 0 ? 'mixed' : 'defeat', score: Math.max(1, profit + 5), narrative: profit > 0 ? `You won! Paid ${pricePaid} (second price) for value worth ${trueValue}. Profit: ${profit}. Truthful bidding works.` : profit === 0 ? `You won and paid exactly the value. Zero profit, but no loss.` : `You overpaid! Won at ${pricePaid} but value is only ${trueValue}.`, resourceChanges: { gold: -pricePaid }, relationshipChanges: {} };
+    }
+    return { outcome: 'mixed', score: 3, narrative: `You bid ${playerBid}. The winner paid ${aiBid}. You didn't win, but preserved your capital.`, resourceChanges: {}, relationshipChanges: {} };
   },
   agents: {
     corvin: { personality: 'opportunist', name: 'Banker Corvin' },
@@ -289,6 +326,16 @@ scenarioRegistry.register({
 
     return 'You chose approval voting. Each voter approves any number of candidates. The most approved candidate wins. In our three-faction council, the Doves and Merchants both appeal to moderates, so they\'d likely receive broad approval. The Hawks, being more extreme, receive fewer approvals. Outcome: a moderate (either Dove or Merchant) wins with broad but shallow support — many voters approve them, but few love them. Approval voting tends to elect centrists who offend no one. This is good for consensus but can suppress passionate minority viewpoints. Real-world users: the Society for Industrial and Applied Mathematics, the American Mathematical Society, and several political parties use approval voting for internal elections.';
   },
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'ranked_choice':
+        return { outcome: 'victory', score: 8, narrative: 'Ranked-choice voting ensures a majority winner. The spoiler effect is eliminated — voters can honestly rank preferences.', resourceChanges: { influence: 30 }, relationshipChanges: {} };
+      case 'approval':
+        return { outcome: 'mixed', score: 5, narrative: 'Approval voting elects a centrist with broad but shallow support. Better than plurality, less representative than ranked-choice.', resourceChanges: { influence: 15 }, relationshipChanges: {} };
+      default:
+        return { outcome: 'defeat', score: 2, narrative: 'Plurality lets the Hawks win with just 30% support. The majority (65%) is unrepresented — the spoiler effect in action.', resourceChanges: { influence: -10 }, relationshipChanges: {} };
+    }
+  },
   agents: {
     pella: { personality: 'longTermPlanner', name: 'Chancellor Pella' },
   },
@@ -326,6 +373,18 @@ scenarioRegistry.register({
       open_membership: 'You chose open membership (10 gold entry fee). Mass membership generates short-term revenue but creates an adverse selection death spiral. Low-quality merchants flood in, damage the guild\'s reputation with substandard goods, and high-quality merchants leave because the guild mark no longer signals quality. This mirrors Akerlof\'s "Market for Lemons" — when buyers can\'t distinguish quality, the average quality drops, the price drops, and high-quality sellers exit. The guild collapses into irrelevance. Real-world examples: eBay\'s early quality problems, unregulated certification programs. The lesson: open membership without quality controls leads to a "race to the bottom." Mechanism design requires barriers to entry that preserve quality. Open membership only works when combined with strong enforcement of quality standards.',
     };
     return insights[choice] || 'Mechanism design is the art of writing rules that align individual incentives with collective welfare. The best mechanism depends on your goals: screening for quality, aligning cooperation, protecting reputation, or maximizing reach. Each creates tradeoffs.';
+  },
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'profit_sharing':
+        return { outcome: 'victory', score: 9, narrative: 'Profit sharing aligns every member\'s incentive with collective success. The guild thrives as a cooperative enterprise.', resourceChanges: { gold: 100, influence: 30 }, relationshipChanges: { irina: 15 } };
+      case 'entry_fee':
+        return { outcome: 'mixed', score: 6, narrative: 'High entry fees create an exclusive guild of wealthy merchants. Quality is assured but growth is limited.', resourceChanges: { gold: 200, influence: 10 }, relationshipChanges: {} };
+      case 'quality_standards':
+        return { outcome: 'mixed', score: 6, narrative: 'Quality standards protect the guild\'s brand. Customers trust the mark, but compliance costs exclude small producers.', resourceChanges: { gold: 50, influence: 20 }, relationshipChanges: { irina: 5 } };
+      default:
+        return { outcome: 'defeat', score: 2, narrative: 'Open membership triggers an adverse selection death spiral. Low-quality merchants flood in and the guild\'s reputation collapses.', resourceChanges: { gold: -50, reputation: -20 }, relationshipChanges: { irina: -15 } };
+    }
   },
   agents: {
     irina: { personality: 'longTermPlanner', name: 'Guildmaster Irina' },
@@ -373,6 +432,22 @@ scenarioRegistry.register({
 
     return 'You didn\'t join. The old road is slow but reliable. You miss the potential benefits of the new road entirely. If the network succeeds, your competitors gain an advantage. If it fails, you\'ve made the safe choice. This is the "wait and see" strategy pushed to its extreme: you never commit to the network, so you never benefit from it either. ' + networkEffect + ' In network industries, the risk of not joining is that competitors who join early build relationships and market position that you can never catch up to. This is the "incumbent\'s dilemma": established players often miss network transitions (e.g., Nokia missing the smartphone transition, Blockbuster missing streaming). The optimal strategy depends on the probability that the network reaches critical mass. If P(success) × network_value > cost of early entry, join early. Otherwise, wait or skip.';
   },
+  customResolve: (playerChoice, aiChoices) => {
+    const aiChoice = Object.values(aiChoices)[0];
+    if (playerChoice === 'join_early') {
+      if (aiChoice === 'join_early') {
+        return { outcome: 'victory', score: 8, narrative: 'Both joined early! The road thrives with critical mass. Your early position makes you a central node in the network.', resourceChanges: { gold: 60, influence: 25 }, relationshipChanges: { lina: 10 } };
+      }
+      return { outcome: 'defeat', score: 2, narrative: 'You joined early but the AI waited. Alone on a dangerous road — the network failed to reach critical mass.', resourceChanges: { gold: -20 }, relationshipChanges: {} };
+    }
+    if (playerChoice === 'wait') {
+      if (aiChoice === 'join_early') {
+        return { outcome: 'victory', score: 7, narrative: 'You waited and joined once the road proved viable. The optimal balance — let pioneers take the risk, then enter a growing network.', resourceChanges: { gold: 40, influence: 15 }, relationshipChanges: { lina: 5 } };
+      }
+      return { outcome: 'defeat', score: 2, narrative: 'Both waited. The road was abandoned. A classic network failure — no one wanted to be first.', resourceChanges: {}, relationshipChanges: {} };
+    }
+    return { outcome: 'mixed', score: 4, narrative: 'You stayed on the old road. Safe but you miss the network\'s potential. Competitors who join may gain an insurmountable advantage.', resourceChanges: { gold: -10 }, relationshipChanges: {} };
+  },
   agents: {
     lina: { personality: 'riskAverse', name: 'Merchant Lina' },
   },
@@ -399,6 +474,19 @@ scenarioRegistry.register({
     { id: 'long', label: 'Long Bridge', description: 'Always 5 minutes. Reliable but slower when the Short Bridge is uncongested.', risk: 'low', tags: ['safe'] },
   ],
   idealNote: 'The optimal strategy depends on congestion levels. If Short Bridge has 3+ users, Long Bridge is faster. If 1-2 users, Short Bridge is faster. This is a classic congestion/El Farol Bar problem: the individually optimal choice depends on the aggregate choices of everyone. The Nash equilibrium occurs when enough people choose the Long Bridge to make both bridges equally attractive — this is the "Wardrop equilibrium" in traffic flow theory. The insight: when many people independently optimize, the system reaches a balance where no single user can improve their travel time by unilaterally switching — but the total travel time may still be higher than the socially optimal (cooperative) outcome.',
+  customResolve: (playerChoice, aiChoices) => {
+    const aiChoice = Object.values(aiChoices)[0];
+    if (playerChoice === 'short' && aiChoice === 'short') {
+      return { outcome: 'mixed', score: 5, narrative: 'Both chose Short Bridge. Heavy congestion — 2 min travel time. Better than Long Bridge but worse than uncongested.', resourceChanges: {}, relationshipChanges: {} };
+    }
+    if (playerChoice === 'short') {
+      return { outcome: 'victory', score: 8, narrative: 'You took the Short Bridge while AI chose Long. You arrived in 1 minute — the fastest possible.', resourceChanges: { gold: 20 }, relationshipChanges: {} };
+    }
+    if (playerChoice === 'long' && aiChoice === 'short') {
+      return { outcome: 'defeat', score: 2, narrative: 'You took the Long Bridge while AI sped past on Short. Your caution cost you time.', resourceChanges: { gold: -10 }, relationshipChanges: {} };
+    }
+    return { outcome: 'mixed', score: 4, narrative: 'Both chose the Long Bridge. Safe but slow — you could have used the Short Bridge for a faster trip.', resourceChanges: {}, relationshipChanges: {} };
+  },
   analyze: (choice, aiChoice) => {
     const playerShort = choice === 'short';
     const aiShort = aiChoice === 'short';
@@ -450,6 +538,24 @@ scenarioRegistry.register({
     { id: 'dont_donate', label: 'Donate Nothing', description: 'Free ride completely. If the library is built, you enjoy it for free. If not, you pay nothing.', risk: 'high', tags: ['defect', 'high'] },
   ],
   idealNote: 'Donating generously (50 gold) is the cooperative ideal. Even if others under-contribute, your donation makes the library more likely. Donating little (10 gold) balances personal cost with some contribution — you\'re partially free riding. Donating nothing is pure free riding. The key insight from public goods theory: voluntary contributions almost always underfund public goods because each individual\'s incentive is to free ride. This is why public goods like libraries, schools, and defense are typically funded through mandatory taxation rather than voluntary donations. The gap between individual rationality (free ride) and collective welfare (contribute) is the public goods dilemma.',
+  customResolve: (playerChoice, aiChoices) => {
+    const playerDonation = playerChoice === 'donate_generously' ? 50 : playerChoice === 'donate_little' ? 10 : 0;
+    const aiChoice = Object.values(aiChoices)[0];
+    const aiDonation = aiChoice === 'donate_generously' ? 50 : aiChoice === 'donate_little' ? 10 : 0;
+    const totalDonations = playerDonation + aiDonation;
+    const libraryBuilt = totalDonations >= 100;
+    const playerBenefit = libraryBuilt ? 30 : 0;
+    const playerNet = playerBenefit - playerDonation;
+    return {
+      outcome: libraryBuilt && playerDonation >= 50 ? 'victory' : libraryBuilt ? 'mixed' : 'defeat',
+      score: playerNet,
+      narrative: playerDonation > 0
+        ? `You donated ${playerDonation} gold. Total: ${totalDonations}/100. Library built: ${libraryBuilt ? 'YES' : 'NO'}.`
+        : `You free rode. ${totalDonations} of 2 contributed. You got ${playerBenefit} for free.`,
+      resourceChanges: { gold: playerNet },
+      relationshipChanges: { miriam: playerDonation >= 50 ? 15 : playerDonation > 0 ? 5 : -10 },
+    };
+  },
   analyze: (choice, aiChoice) => {
     const playerDonation = choice === 'donate_generously' ? 50 : choice === 'donate_little' ? 10 : 0;
     const aiDonation = aiChoice === 'donate_generously' ? 50 : aiChoice === 'donate_little' ? 10 : 0;

@@ -70,6 +70,22 @@ scenarioRegistry.register({
     { id: 'dont_enter', label: 'Don\'t Enter at All', description: 'Skip the Eastern trade entirely. Safe, but miss the opportunity entirely.', risk: 'low', tags: ['defect', 'safe'] },
   ],
   idealNote: 'Using backward induction: Voss (first mover) enters because the payoff from entering (even if Rourke competes) exceeds not entering. Rourke (second mover) should compete if the market is large enough to support two, otherwise withdraw. The first-mover advantage is real: Voss gets pick of assets. But the second mover has the advantage of information: they know Voss\'s commitment before deciding. This is the fundamental tradeoff in sequential games: first-mover commitment power vs. second-mover informational advantage. The optimal choice depends on whether the market is a "winner-take-most" (enter first) or can support two players (either can work).',
+  customResolve: (playerChoice, aiChoices) => {
+    const aiChoice = Object.values(aiChoices)[0];
+    if (playerChoice === 'enter_first') {
+      return { outcome: 'victory', score: 8, narrative: 'First-mover advantage: you capture prime warehouses and supplier contracts. Commitment pays off.', resourceChanges: { gold: 80, influence: 15 }, relationshipChanges: {} };
+    }
+    if (playerChoice === 'enter_second_compete') {
+      if (aiChoice === 'enter_first') {
+        return { outcome: 'mixed', score: 5, narrative: 'You entered second and compete with Voss. Backward induction equilibrium — both share the market with moderate profits.', resourceChanges: { gold: 30 }, relationshipChanges: { voss: -5 } };
+      }
+      return { outcome: 'victory', score: 7, narrative: 'Voss didn\'t enter. You captured the Eastern trade route alone — maximum profit.', resourceChanges: { gold: 100, influence: 20 }, relationshipChanges: {} };
+    }
+    if (playerChoice === 'enter_second_withdraw') {
+      return { outcome: 'mixed', score: 4, narrative: 'You waited, assessed, and withdrew. The option value of information saved you from a bad bet.', resourceChanges: {}, relationshipChanges: {} };
+    }
+    return { outcome: 'defeat', score: 1, narrative: 'You didn\'t enter at all. All potential profits from the Eastern trade are forfeited.', resourceChanges: {}, relationshipChanges: {} };
+  },
   analyze: (choice, aiChoice) => {
     const backwardInduction = 'Backward induction: Start at the end. If Voss enters and Rourke competes → both get moderate profits (market shared). If Voss enters and Rourke withdraws → Voss gets high profits, Rourke gets 0. If Voss doesn\'t enter → Rourke can enter alone and get high profits. Since Rourke will compete (they\'d rather compete than withdraw for 0), Voss knows entering yields moderate profits — better than not entering (0). So Voss enters. The equilibrium: both enter and share the market.';
     if (choice === 'enter_first') {
@@ -113,6 +129,18 @@ scenarioRegistry.register({
     { id: 'retreat', label: 'Strategic Retreat', description: 'Pull back to advantageous terrain. Zero gain now, but sets up a better position.', risk: 'medium', tags: ['cooperate'] },
   ],
   idealNote: 'The minimax solution against a perfect opponent is to fortify or retreat — these guarantee a non-negative outcome regardless of the opponent\'s response. Any attack option can be countered: left flank can be blocked, center can be met with full force, right can be flanked. A perfect opponent (minimax player) will always choose the response that minimizes your payoff. So you should choose the move whose worst-case outcome is highest. This is "maximin" — maximize your minimum possible payoff. In zero-sum games, the minimax theorem guarantees that this is the optimal conservative strategy.',
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'fortify':
+        return { outcome: 'mixed', score: 5, narrative: 'You fortified. The maximin choice — guarantees no loss against a perfect opponent. Safe but no gain.', resourceChanges: { military: 10 }, relationshipChanges: {} };
+      case 'retreat':
+        return { outcome: 'mixed', score: 4, narrative: 'Strategic retreat. The Engine declines to pursue. Positional gain without engagement.', resourceChanges: {}, relationshipChanges: {} };
+      case 'attack_center':
+        return { outcome: 'mixed', score: 3, narrative: 'Center attack met by equal force. A bloody stalemate — the Engine countered perfectly.', resourceChanges: { military: -15 }, relationshipChanges: {} };
+      default:
+        return { outcome: 'defeat', score: 1, narrative: `Your ${playerChoice === 'attack_left' ? 'left flank attack' : 'right flank attack'} was anticipated and countered. The minimax engine never blunders.`, resourceChanges: { military: -25, influence: -10 }, relationshipChanges: {} };
+    }
+  },
   analyze: (choice, aiChoice) => {
     const minimaxExplained = 'Minimax theorem (von Neumann, 1928): In any finite zero-sum game, there exists a value V such that Player 1 can guarantee at least V, and Player 2 can hold Player 1 to at most V. The optimal strategy for each is to assume the opponent will counter perfectly. You maximize your minimum gain (maximin); they minimize your maximum gain (minimax).';
     const engineResponse = 'The Engine calculates all branches and picks the response that minimizes your payoff. It never makes a mistake. Against such an opponent, hoping they miss something is not a strategy.';
@@ -159,6 +187,18 @@ scenarioRegistry.register({
     { id: 'borda', label: 'Borda Count', description: 'Voters rank candidates; points awarded by position (3, 2, 1). Most points wins. Rewards broad appeal.', risk: 'high', tags: ['high'] },
   ],
   idealNote: 'There is no single "best" voting system — each has tradeoffs. Arrow\'s Impossibility Theorem proves that no ranked voting system can simultaneously satisfy all desirable properties (Pareto efficiency, independence of irrelevant alternatives, non-dictatorship). Plurality favors the centrist (35% wins). Ranked-choice favors the progressive (Centrist is eliminated first, their votes split between Progressive and Traditionalist). Approval favors the centrist (broadest appeal). Borda favors the centrist (most second-choice votes if moderate). The optimal choice depends on voter preference distributions and your strategic goal. This is mechanism design: the rules you choose determine the outcome.',
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'ranked_choice':
+        return { outcome: 'victory', score: 8, narrative: 'Ranked-choice voting: Progressive wins with majority support after redistribution. Eliminates the spoiler effect.', resourceChanges: { influence: 30 }, relationshipChanges: { progressive: 15 } };
+      case 'approval':
+        return { outcome: 'mixed', score: 5, narrative: 'Approval voting: Centrist wins with broad but shallow support. Better than plurality, rewards consensus.', resourceChanges: { influence: 15 }, relationshipChanges: {} };
+      case 'borda':
+        return { outcome: 'mixed', score: 4, narrative: 'Borda count: Centrist wins as everyone\'s second choice. Rewards broad acceptability but highly manipulable.', resourceChanges: { influence: 10 }, relationshipChanges: {} };
+      default:
+        return { outcome: 'defeat', score: 2, narrative: 'Plurality: Centrist wins with just 35%. Spoiler effect — the majority (65%) is unrepresented.', resourceChanges: { influence: -10 }, relationshipChanges: {} };
+    }
+  },
   analyze: (choice) => {
     if (choice === 'plurality') {
       return 'You chose Plurality (First-Past-the-Post). Outcome: Centrist wins with 35% of the vote. Progressive and Traditionalist split the opposition. Why it happened: under plurality, voters face the "wasted vote" problem — supporters of Progressive and Traditionalist know their candidate probably can\'t win, so some vote strategically for the Centrist as a "lesser evil." This is Duverger\'s Law: plurality voting tends to produce two-party systems because third parties are squeezed out. Your preferred candidate (Progressive) lost. Arrow\'s Theorem: plurality fails the "independence of irrelevant alternatives" criterion — whether the Traditionalist runs affects whether the Centrist beats the Progressive. Real-world: US presidential elections, UK general elections. The lesson: plurality is simple but creates strong strategic voting incentives and can produce winners who lack majority support.';
@@ -201,6 +241,18 @@ scenarioRegistry.register({
     { id: 'manual', label: 'Manual Assignment', description: 'Assign based on your personal judgment. No algorithm.', risk: 'high', tags: ['high'] },
   ],
   idealNote: 'The doctors-propose Deferred Acceptance algorithm produces the doctor-optimal stable matching. The hospitals-propose version produces the hospital-optimal stable matching. Crucially, both produce a stable matching (no blocking pairs), but they favor different sides. This is the key insight of matching theory (Gale & Shapley, 1962): the Deferred Acceptance algorithm always produces a stable matching, and which side proposes determines which side gets their preferred outcome. There is no "neutral" stable matching — any stable matching systematically favors one side over the other. The random and manual approaches are likely unstable, meaning some doctors and hospitals would rather match with each other than their assigned partners.',
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'doctors_propose':
+        return { outcome: 'victory', score: 8, narrative: 'Doctors propose: deferred acceptance produces a stable, doctor-optimal matching. No blocking pairs — the market clears efficiently.', resourceChanges: { influence: 25 }, relationshipChanges: { alara: 10, benoit: 10, chen: 10 } };
+      case 'hospitals_propose':
+        return { outcome: 'victory', score: 8, narrative: 'Hospitals propose: deferred acceptance produces a stable, hospital-optimal matching. The proposing side gets the best outcome.', resourceChanges: { influence: 20 }, relationshipChanges: {} };
+      case 'random':
+        return { outcome: 'defeat', score: 2, narrative: 'Random lottery is almost certainly unstable. Blocking pairs will unravel the system.', resourceChanges: { influence: -10 }, relationshipChanges: {} };
+      default:
+        return { outcome: 'defeat', score: 3, narrative: 'Manual assignment is prone to bias, manipulation, and instability. Markets need systematic matching algorithms.', resourceChanges: { influence: 5 }, relationshipChanges: {} };
+    }
+  },
   analyze: (choice) => {
     if (choice === 'doctors_propose') {
       return 'Doctors propose. Deferred Acceptance algorithm runs:\n\nRound 1: Alara applies to Royal (her #1). Benoit applies to St. Jude\'s (#1). Chen applies to Harbor (#1). Royal tentatively accepts Alara (beats their #3). St. Jude\'s tentatively accepts Benoit (beats their #2). Harbor tentatively accepts Chen (beats their #3).\n\nRound 2: No rejections — everyone is tentatively matched. Stable!\n\nFinal match: Alara→Royal, Benoit→St. Jude\'s, Chen→Harbor. This is the doctor-optimal stable matching: every doctor gets their first choice. No doctor-hospital pair would rather be matched to each other. The result is stable and gives doctors their best possible outcome. Gale-Shapley proof: the Deferred Acceptance algorithm always produces a stable matching, and the proposing side gets the best outcome among all stable matchings. Real-world: the National Resident Matching Program (NRMP) uses a doctor-proposing algorithm. This is why US medical students get their preferred residencies — being the proposer is a real advantage.';
@@ -245,6 +297,18 @@ scenarioRegistry.register({
     { id: 'dominate', label: 'Push Your Advantage', description: 'Use your strongest position (water rights) to extract maximum concessions. Risky — may collapse negotiations.', risk: 'high', tags: ['defect', 'high'] },
   ],
   idealNote: 'The grand bargain is optimal in multilateral negotiations. When multiple issues are on the table, logrolling allows each party to concede on issues they care little about in exchange for gains on issues they value highly. This "expands the pie" — the total value of the package exceeds the sum of separate deals. The key insight from bargaining theory: in multi-issue negotiations, Pareto-efficient agreements require linking issues so that each party trades concessions on low-value issues for gains on high-value issues. This is why real trade negotiations cover hundreds of issues simultaneously.',
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'grand_bargain':
+        return { outcome: 'victory', score: 9, narrative: 'Grand Bargain: logrolling across all four issues expands the pie. Every kingdom gains more than the sum of separate deals.', resourceChanges: { gold: 100, influence: 30, military: 20 }, relationshipChanges: { aldric: 15, mira: 10, wulfric: 10 } };
+      case 'sequential_deals':
+        return { outcome: 'mixed', score: 5, narrative: 'Sequential bilateral deals create contradictions. Local optima prevent the global optimum — value is left on the table.', resourceChanges: { gold: 40, influence: 10 }, relationshipChanges: { aldric: 5, mira: 5, wulfric: 5 } };
+      case 'walk_away':
+        return { outcome: 'defeat', score: 2, narrative: 'You walked away. All potential gains from trade lost. The BATNA was worse than any deal.', resourceChanges: {}, relationshipChanges: {} };
+      default:
+        return { outcome: 'defeat', score: 1, narrative: 'You pushed your advantage too hard. The negotiations collapsed. Pure claiming destroys value.', resourceChanges: { gold: -20, influence: -15 }, relationshipChanges: { aldric: -10, mira: -15, wulfric: -10 } };
+    }
+  },
   analyze: (choice) => {
     if (choice === 'grand_bargain') {
       return 'You proposed a Grand Bargain linking all four issues. After intense negotiation, a deal is reached: Haven lowers tariffs on Valdris wine (Marches concedes on water rights), Valdris grants military access to the Marches (in exchange for grain tariffs), and all three fund a joint court. The total value created is greater than the sum of separate bilateral deals because of logrolling: each party conceded on issues they valued least to gain on issues they valued most. This is the core insight of integrative bargaining: in multi-issue negotiations, the pie is larger than any single issue suggests. By linking issues, you create trades that benefit everyone. Real-world examples: the Uruguay Round of GATT negotiations linked agriculture, textiles, and intellectual property into a single agreement. The Camp David Accords linked Israeli withdrawal from Sinai with Egyptian recognition and US aid. The lesson: when negotiating on multiple dimensions, never negotiate issue-by-issue — link them to create value through trade.';
@@ -287,6 +351,18 @@ scenarioRegistry.register({
     { id: 'employee_welfare', label: 'Employee Welfare Focus', description: 'Maximize employee happiness and wages. Workers will love it, but productivity collapses and the company may fail.', risk: 'medium', tags: ['cooperate'] },
   ],
   idealNote: 'The balanced multi-objective is the most robust choice. Single objectives are catastrophically gameable: profit-only leads to exploitation, satisfaction-only leads to bankruptcy, welfare-only leads to inefficiency. A weighted combination of multiple metrics creates a more robust objective — but it\'s still imperfect because the weights themselves can be gamed. This is Goodhart\'s Law: "When a measure becomes a target, it ceases to be a good measure." The deeper lesson from mechanism design: the objective function you give an optimizer defines its behavior more precisely than any constraint or guideline. Designing a good objective function — one that aligns the optimizer\'s incentives with your true intent — is the central challenge of mechanism design and AI alignment.',
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'mixed':
+        return { outcome: 'victory', score: 9, narrative: 'Balanced multi-objective: countervailing incentives align the AI with sustainable success. Profit, satisfaction, welfare, and environment all thrive.', resourceChanges: { gold: 200, influence: 40 }, relationshipChanges: { engineer: 15, philosopher: 15 } };
+      case 'profit_only':
+        return { outcome: 'defeat', score: 2, narrative: 'Profit-only optimization: the AI maximized the metric but destroyed the business. Goodhart\'s Law in action.', resourceChanges: { gold: -100, influence: -20 }, relationshipChanges: { philosopher: -15 } };
+      case 'customer_satisfaction':
+        return { outcome: 'defeat', score: 2, narrative: 'Customer satisfaction-only: the AI gave everything away for free. The metric was gamed, the company bankrupt.', resourceChanges: { gold: -150, influence: -10 }, relationshipChanges: {} };
+      default:
+        return { outcome: 'defeat', score: 3, narrative: 'Employee welfare-only: a wonderful workplace that couldn\'t survive market reality. The AI ignored external constraints.', resourceChanges: { gold: -80, influence: 10 }, relationshipChanges: { engineer: 5 } };
+    }
+  },
   analyze: (choice) => {
     if (choice === 'profit_only') {
       return 'You optimized for profit alone. The Babbage Engine delivers: quarterly profits increase 300% in the first year. But the methods are horrifying: wages slashed below subsistence, suppliers squeezed to bankruptcy, products adulterated with cheaper ingredients (causing health issues), and competitors driven out through predatory pricing. Regulators descend. Reputation collapses. By year three, the company is destroyed by lawsuits and public backlash. This is the textbook case of Goodhart\'s Law: when profit became the target, it ceased to be a good measure of business health. The AI did exactly what you asked — maximized profit — but not what you INTENDED (a sustainable, thriving business). Real-world parallels: Wells Fargo\'s cross-selling scandal (employees opened fake accounts to meet sales targets), Volkswagen\'s emissions cheating (optimized for passing tests, not for clean air). The lesson: be very careful what you optimize for. Single-metric optimization is extremely dangerous when the metric is imperfect (which it always is) and the optimizer is powerful (which this AI is).';
@@ -329,6 +405,18 @@ scenarioRegistry.register({
     { id: 'point_to_point', label: 'Point-to-Point Direct Routes', description: 'Each source connects directly to each destination. Maximum resilience, minimum efficiency.', risk: 'high', tags: ['defect'] },
   ],
   idealNote: 'Redundant hubs are the optimal design for most realistic supply chains. Pure hub-and-spoke is maximally efficient during normal operation but catastrophically fragile to disruption. Pure mesh is resilient but so inefficient that the added latency and cost outweigh the resilience benefits. Two redundant hubs provide 80% of the efficiency of a single hub with 90% of the resilience of a full mesh. This is the key insight from network theory: the optimal network topology often lies between the extremes. The "hub-and-spoke vs. mesh" tradeoff is fundamental to network design in transportation, telecommunications, and organization design.',
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'redundant_hub':
+        return { outcome: 'victory', score: 8, narrative: 'Redundant hubs: the sweet spot. 90% efficiency of hub-and-spoke with 90% resilience of mesh. Balanced network design.', resourceChanges: { gold: 80, influence: 20 }, relationshipChanges: { logistician: 15 } };
+      case 'hub_spoke':
+        return { outcome: 'mixed', score: 5, narrative: 'Hub-and-spoke: maximally efficient but catastrophically fragile. A single disruption paralyzes the entire network.', resourceChanges: { gold: 100, influence: 10 }, relationshipChanges: {} };
+      case 'mesh':
+        return { outcome: 'mixed', score: 4, narrative: 'Mesh network: resilient but costly. Diminishing returns from excessive redundancy.', resourceChanges: { gold: 20, influence: 20 }, relationshipChanges: {} };
+      default:
+        return { outcome: 'defeat', score: 2, narrative: 'Point-to-point: absolute resilience at absurd cost. 36 routes for what 10 could do — complexity overwhelms efficiency.', resourceChanges: { gold: -50, influence: -5 }, relationshipChanges: {} };
+    }
+  },
   analyze: (choice) => {
     if (choice === 'hub_spoke') {
       return 'You built a hub-and-spoke network. All goods flow through Central Hub. During normal operation: efficiency is excellent. Processing times drop 30%. Costs fall 20%. But when a flood damages Central Hub, THE ENTIRE NETWORK SHUTS DOWN. Every route depends on that single node. This is the fragility of centralized networks: they are optimized for normal operation but fail catastrophically under disruption. In network theory terms, the hub is a "centrality bottleneck" — its betweenness centrality (fraction of shortest paths that go through it) is 1.0: EVERY path goes through it. Real-world parallel: the 2011 Thailand floods disrupted a single hub for hard disk drive manufacturing, causing a global shortage. The 2021 Suez Canal blockage — a single chokepoint — cost $10 billion per day in disrupted trade. The lesson: hub-and-spoke maximizes efficiency but minimizes resilience. The optimal design depends on whether you face reliable or unpredictable conditions.';
@@ -371,6 +459,18 @@ scenarioRegistry.register({
     { id: 'hands_off', label: 'Hands-Off / Free Speech', description: 'No algorithmic curation (reverse chronological feed). Minimal moderation. Let users decide what to see.', risk: 'high', tags: ['high'] },
   ],
   idealNote: 'The balanced approach is optimal for long-term platform health. Pure engagement optimization creates short-term growth but generates negative externalities (misinformation, polarization) that eventually lead to regulation, user exodus, and reputational damage. Pure well-being focus may fail to achieve the network effects needed to sustain the platform. The hands-off approach is naive — minimum moderation leads to the "worst of both worlds" where the loudest, most extreme voices dominate. The balanced approach acknowledges that recommendation algorithms inevitably shape user behavior, so choosing NOT to optimize is itself a design decision. The lesson: in platform design, "neutrality" is a myth — every design choice, including the choice not to curate, shapes user behavior.',
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'balanced':
+        return { outcome: 'victory', score: 8, narrative: 'Balanced approach: meaningful engagement over raw metrics. Sustainable growth, healthy community, ahead of regulation.', resourceChanges: { gold: 80, influence: 35 }, relationshipChanges: { scientist: 15, ethics: 15 } };
+      case 'wellbeing':
+        return { outcome: 'mixed', score: 5, narrative: 'Well-being focus: healthier but smaller. Ethically sound but growth stalls against engagement-optimized competitors.', resourceChanges: { gold: 20, influence: 20 }, relationshipChanges: { ethics: 15 } };
+      case 'engagement':
+        return { outcome: 'defeat', score: 2, narrative: 'Engagement-optimized: short-term growth, long-term toxicity. Regulatory backlash, advertiser exodus, death spiral.', resourceChanges: { gold: 50, influence: -20 }, relationshipChanges: { ethics: -15 } };
+      default:
+        return { outcome: 'defeat', score: 2, narrative: 'Hands-off: chaos. The loudest, most extreme voices dominate. "Neutrality" is a myth — inaction empowers the worst elements.', resourceChanges: { gold: -30, influence: -15 }, relationshipChanges: {} };
+    }
+  },
   analyze: (choice) => {
     if (choice === 'engagement') {
       return 'You chose engagement-optimized algorithms. Time on platform soars 50%. But the content that drives engagement is outrage, sensationalism, and conflict. Polarization increases. Misinformation spreads faster than fact-checks. Users report higher anxiety and addiction. After 18 months, regulatory investigations begin, advertisers flee, and a mass exodus of quality users begins. The platform enters a "death spiral": to maintain engagement after losing quality users, the algorithm promotes even MORE extreme content to the remaining users. This is the dark side of network effects: the network grows more toxic as it optimizes for engagement, and the "toxic cascade" feeds on itself. Real-world parallels: Facebook\'s engagement algorithms linked to polarization in Myanmar and Ethiopia; YouTube\'s recommendation engine was found to radicalize users by promoting increasingly extreme content. The lesson: optimizing engagement without considering societal externalities creates enormous long-term risks. The "engagement at all costs" model is a Nash equilibrium that individual platforms adopt because competitors do the same, but it leads to collectively worse outcomes. This is a multi-player Prisoner\'s Dilemma in platform design.';
@@ -379,7 +479,7 @@ scenarioRegistry.register({
       return 'You chose well-being-focused algorithms. User satisfaction scores rise, and harmful content drops 80%. However, engagement metrics (time on platform, daily active users) decline 30%. Ad revenue drops. Investors panic. Without the engagement-driven network effects, growth stalls. The platform becomes a healthier space but a smaller one. This is the tension at the heart of platform design: well-being and engagement are often in direct conflict. The platform survives as a niche, high-quality community but never achieves the market dominance it might have. Real-world parallel: Pinterest explicitly designed its platform to avoid outrage-driven engagement, creating a more positive environment but never reaching Facebook-scale dominance. The lesson: prioritizing well-being is ethically sound but strategically challenging in a competitive market where rivals optimize for engagement. This is a "collective action problem" in the tech industry — all platforms would benefit from a well-being focus, but no individual platform can afford to unilaterally reduce engagement without losing market share.';
     }
     if (choice === 'balanced') {
-      return 'You chose a balanced approach: the algorithm optimizes for "meaningful engagement" rather than raw time on platform. Outrage content is demoted. Fact-checks are promoted. Moderation removes the worst 1% of content while allowing debate on controversial topics. User time on platform drops 10%, but satisfaction rises and quality users stay. The platform grows more slowly but sustainably. After 3 years, when regulators tighten rules on social media, your platform is already compliant — you avoid the scandals that cripple competitors. In game theory terms, the balanced approach is akin to a "cooperative strategy" in a repeated game: you sacrifice short-term gains for long-term sustainability. Real-world parallel: Reddit\'s community-driven moderation, which balances free expression with anti-harassment rules, creating a platform that has remained relevant for 15+ years. The lesson: balanced platform design is the "Tit-for-Tat" of social media — not too trusting (you do moderate) but not too aggressive (you don\'t censor everything). It acknowledges that algorithmic design is a form of mechanism design: your recommendation algorithm is a "mechanism" that shapes user behavior, so design it deliberately.';
+      return 'You chose a balanced approach: the algorithm optimizes for "meaningful engagement" rather than raw time on platform. Outrage content is demoted. Fact-checks are promoted. Moderation removes the worst 1% of content while allowing debate on controversial topics. User time on platform drops 10%, but satisfaction rises and quality users stay. The platform grows more slowly but sustainably. After 3 years, when regulators tighten rules on social media, your platform is already compliant — you avoid the scandals that cripple competitors. In game theory terms, the balanced approach is akin to a "cooperative strategy" in a repeated game: you sacrifice short-term gains for long-term sustainability. Real-world parallel: Reddit\'s community-driven moderation, which balances free expression with anti-harassment rules, creating a platform that has remained relevant for 15+ years. The lesson: balanced platform design is the "Tit-for-Tat" of social media — not too trusting (you do moderate) and not too aggressive (you don\'t censor everything). It acknowledges that algorithmic design is a form of mechanism design: your recommendation algorithm is a "mechanism" that shapes user behavior, so design it deliberately.';
     }
     return 'You chose a hands-off approach: reverse chronological feed, minimal moderation. The result is chaos. Without algorithmic curation, the loudest, most extreme voices dominate. Spam and harassment flourish. Coordinated disinformation campaigns operate with impunity. Quality users leave because the signal-to-noise ratio collapses. The platform quickly becomes known as a haven for toxicity. This outcome demonstrates that "neutrality" in platform design is a myth — by choosing not to curate, you\'ve still made a design choice that shapes behavior. The "free marketplace of ideas" ideal assumes a level playing field, but unmoderated platforms are dominated by those with the most resources, motivation, and willingness to engage in dark patterns. Real-world parallel: Twitter under minimal moderation (pre-2022) faced persistent harassment problems; 4chan\'s minimal moderation model produced some of the internet\'s most toxic communities. The lesson: the choice is never "curate or don\'t curate" — it\'s "curate deliberately or let the worst elements curate for you." In mechanism design terms, NOT choosing is still a choice, and the mechanism that results from inaction is usually worse than a thoughtfully designed one.';
   },
@@ -414,6 +514,18 @@ scenarioRegistry.register({
     { id: 'subsidies', label: 'Clean Energy Subsidies', description: 'Instead of pricing carbon, subsidize clean energy. Positive incentives rather than penalties. Costs treasury money but avoids political backlash.', risk: 'low', tags: ['safe'] },
   ],
   idealNote: 'The carbon tax is the most economically efficient mechanism according to most economists. It gives businesses price certainty (they know exactly what each ton of emissions costs) and allows them to find the cheapest abatement. Revenue can be used to reduce other taxes (the "double dividend"). Cap-and-trade guarantees the emissions outcome but creates price volatility. Voluntary programs consistently fail (free rider problem). Subsidies work but are less efficient per dollar spent. The optimal choice depends on political constraints: carbon tax is efficient but politically difficult; cap-and-trade is more politically palatable (it "hides" the price); subsidies are easiest but most expensive per ton reduced.',
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'carbon_tax':
+        return { outcome: 'victory', score: 9, narrative: 'Carbon tax: the most efficient mechanism. Predictable price signal drives 40% emissions reduction. Revenue rebated as citizen dividend.', resourceChanges: { gold: 150, influence: 30, population: 200 }, relationshipChanges: { minister_env: 15 } };
+      case 'cap_trade':
+        return { outcome: 'mixed', score: 6, narrative: 'Cap-and-trade: guarantees the emissions cap but creates price volatility. Quantity certainty at the cost of price uncertainty.', resourceChanges: { gold: 80, influence: 20, population: 100 }, relationshipChanges: {} };
+      case 'subsidies':
+        return { outcome: 'mixed', score: 5, narrative: 'Clean energy subsidies: politically popular but expensive per ton reduced. Free riding on the subsidy dilutes effectiveness.', resourceChanges: { gold: -50, influence: 15, population: 50 }, relationshipChanges: { minister_industry: 10 } };
+      default:
+        return { outcome: 'defeat', score: 1, narrative: 'Voluntary program: classic free rider problem. 2% reduction — voluntary approaches consistently fail for public goods.', resourceChanges: {}, relationshipChanges: { minister_env: -10 } };
+    }
+  },
   analyze: (choice) => {
     if (choice === 'carbon_tax') {
       return 'You implemented a carbon tax of 5 gold per ton of emissions. Results: emissions drop 25% in the first year, 40% by year 3. Businesses invest in efficiency because every ton they avoid saves them 5 gold. The tax revenue (250 gold/year) is rebated as a "carbon dividend" to citizens, making the policy popular (most citizens receive more in dividend than they pay in higher prices). Economic efficiency is high: the tax creates a uniform price signal that allows the market to find the cheapest reduction opportunities. In mechanism design terms, the carbon tax is a "price-based mechanism" — it sets the price and lets the market determine the quantity of reductions. It is transparent, predictable, and hard to game. Real-world examples: British Columbia\'s carbon tax (revenue-neutral, popular across party lines), Sweden\'s carbon tax ($140/ton, one of the highest in the world, credited with a 25% emissions reduction since 1995 while the economy grew 75%). The lesson: carbon taxes are economically elegant but politically challenging. Their success depends on how the revenue is used. Rebating it to citizens (rather than keeping it in general revenue) is the key to political acceptability.';
@@ -456,6 +568,18 @@ scenarioRegistry.register({
     { id: 'poa', label: 'Proof-of-Authority', description: 'Pre-approved validators (known entities with reputation) produce blocks. Fastest (~100,000 TPS) but fully centralized — trust in known validators.', risk: 'high', tags: ['defect', 'high'] },
   ],
   idealNote: 'There is no single "best" consensus protocol — it depends on your use case. For a store of value (like Bitcoin), proof-of-work\'s security justifies its cost. For a smart contract platform (like Ethereum), proof-of-stake balances speed with reasonable decentralization. For high-throughput applications (like a payment network), DPoS or PoA may be necessary despite centralization risks. The blockchain trilemma is a fundamental design constraint: every consensus mechanism represents a deliberate choice about which property to sacrifice. The lesson from mechanism design: there are no free lunches — every design choice creates tradeoffs, and transparently acknowledging those tradeoffs is the first step to good mechanism design.',
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'pow':
+        return { outcome: 'victory', score: 8, narrative: 'Proof-of-Work: maximally secure and decentralized. Tradeoff: slow and energy-intensive, but the cost IS the security.', resourceChanges: { gold: -50, influence: 35 }, relationshipChanges: { amara: 15 } };
+      case 'pos':
+        return { outcome: 'mixed', score: 7, narrative: 'Proof-of-Stake: energy-efficient with bonded accountability. Trades physical security for economic security.', resourceChanges: { gold: 20, influence: 25 }, relationshipChanges: { kael: 10 } };
+      case 'dpos':
+        return { outcome: 'mixed', score: 5, narrative: 'Delegated Proof-of-Stake: fast but creates an elected oligarchy. Decentralization is sacrificed for throughput.', resourceChanges: { gold: 50, influence: 15 }, relationshipChanges: {} };
+      default:
+        return { outcome: 'mixed', score: 4, narrative: 'Proof-of-Authority: fastest but fully centralized. Permissioned — appropriate for enterprise, not for open networks.', resourceChanges: { gold: 80, influence: 5 }, relationshipChanges: {} };
+    }
+  },
   analyze: (choice) => {
     if (choice === 'pow') {
       return 'You chose Proof-of-Work. Your ledger is extremely secure: an attacker would need 51% of global hashing power (computational energy) to rewrite history — practically impossible for a well-established chain. The network is fully decentralized: anyone with hardware can mine. But throughput is ~7 transactions per second (vs. Visa\'s ~24,000) and each transaction consumes as much energy as a small household does in a day. The economic incentive: miners earn block rewards + fees, aligning their interests with network security. This is mechanism design at its finest: the protocol aligns self-interested actors (miners seeking profit) with the socially desired outcome (secure transaction validation). The tradeoff: energy consumption is the price of permissionless security. Real-world lesson: PoW works brilliantly for high-value, low-frequency transactions (settlement layer). It is unsuitable for everyday payments (coffee, groceries). The mechanism\'s security comes from its cost — and that cost is the energy consumption critics decry. This is not a bug but a feature of the design. The mechanism is secure BECAUSE it is expensive.';
@@ -498,6 +622,18 @@ scenarioRegistry.register({
     { id: 'open_access', label: 'Open Access (Return to Tragedy)', description: 'Remove all restrictions. Let everyone fish freely. The same path that led to collapse before.', risk: 'high', tags: ['defect', 'high'] },
   ],
   idealNote: 'Community management is the optimal choice when the conditions are right — and here they are: the resource is well-defined, the community is stable and has trust, rules can be adapted locally, and violators can be monitored and sanctioned at reasonable cost. Elinor Ostrom\'s Nobel-winning research showed that communities often outperform both markets and governments at managing common resources when these conditions hold. Privatization works but can exclude traditional users and create inequality. Regulation works but requires costly enforcement and may lack local knowledge. Open access guarantees tragedy. The deepest lesson: the "tragedy of the commons" is not inevitable — it is the result of a particular institutional structure (or lack thereof). Change the structure, change the outcome.',
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'community':
+        return { outcome: 'victory', score: 10, narrative: 'Community management: Ostrom\'s solution. Self-governance with local rules, monitoring, and graduated sanctions. The commons thrive for generations.', resourceChanges: { gold: 60, population: 200, influence: 40 }, relationshipChanges: { elder: 20, scholar: 15 } };
+      case 'privatize':
+        return { outcome: 'mixed', score: 6, narrative: 'Privatization: solves overfishing through property rights but creates inequality. Some traditional fishers lose access.', resourceChanges: { gold: 80, population: 50 }, relationshipChanges: {} };
+      case 'regulate':
+        return { outcome: 'mixed', score: 5, narrative: 'Government regulation: effective but costly enforcement. Adversarial relationship between state and community.', resourceChanges: { gold: 20, population: 100 }, relationshipChanges: { elder: -5 } };
+      default:
+        return { outcome: 'defeat', score: 0, narrative: 'Open access: the tragedy repeats. Within two seasons, the fish stocks collapse. Freedom in the commons brings ruin to all.', resourceChanges: { gold: -30, population: -200 }, relationshipChanges: { elder: -20 } };
+    }
+  },
   analyze: (choice) => {
     if (choice === 'privatize') {
       return 'You divided the lake into 20 private fishing territories. Each owner now has full property rights. The immediate result: no overfishing — each owner carefully manages their section because they bear the full cost of depletion and reap the full benefit of conservation. This is the "Coase Theorem" in action: when property rights are clearly defined and transaction costs are low, private bargaining leads to efficient outcomes. However, the privatization was costly to implement (surveying, legal fees, enforcement of boundaries). And some traditional fishing families who couldn\'t afford to buy a territory lost access entirely — they become landless laborers working for territory owners. Equity suffers even as efficiency improves. Real-world examples: Iceland\'s individual transferable quotas (ITQs) for fisheries saved the cod stocks but concentrated wealth among quota holders. The lesson: privatization solves the tragedy of the commons but creates new problems — inequality, exclusion, and the loss of community governance traditions. The mechanism design insight: property rights are not "natural" — they are a mechanism created by society. How you define and distribute them determines who wins and who loses.';
@@ -543,6 +679,20 @@ scenarioRegistry.register({
     { id: 'utopian', label: 'Utopian Communal', description: 'Consensus-based direct democracy, gift economy, no taxes (voluntary contributions), restorative justice, comprehensive education, minimal/no military, free trade, open immigration. Maximum collective harmony — if human nature allows it.', risk: 'high', tags: ['cooperate', 'high'] },
   ],
   idealNote: 'There is no single "right" answer for how to design a society — that is the deepest lesson of the entire game. Every design choice creates tradeoffs between efficiency and equity, freedom and security, individual rights and collective welfare. A liberal democracy tends to produce the most stable and prosperous outcomes across diverse populations because it balances individual incentives with social safety nets, and its adaptive institutions can respond to changing conditions. But even this is contingent — the "best" design depends on the population\'s composition, history, environment, and values. The true mastery is understanding that EVERY institution is a game mechanism: it creates incentives, and people respond to incentives. Design the rules, and the behavior follows.',
+  customResolve: (playerChoice) => {
+    switch (playerChoice) {
+      case 'liberal_democracy':
+        return { outcome: 'victory', score: 9, narrative: 'Liberal Democracy: balanced, resilient, adaptive. Mixed economy, ranked-choice voting, progressive taxation. The most stable and prosperous system across diverse populations.', resourceChanges: { gold: 200, influence: 80, military: 30, population: 500 }, relationshipChanges: { chronicler: 20 } };
+      case 'social_democracy':
+        return { outcome: 'victory', score: 8, narrative: 'Social Democracy: highest total welfare and cooperation rate (85%). High trust equilibrium — citizens pay taxes willingly because institutions reciprocate.', resourceChanges: { gold: 150, influence: 60, population: 600 }, relationshipChanges: { chronicler: 15 } };
+      case 'libertarian':
+        return { outcome: 'mixed', score: 5, narrative: 'Libertarian: explosive growth but extreme inequality. Social fabric frays as cooperation between classes breaks down.', resourceChanges: { gold: 300, influence: 20, population: 100 }, relationshipChanges: {} };
+      case 'authoritarian':
+        return { outcome: 'defeat', score: 2, narrative: 'Authoritarian: order through fear. Brittle — cooperation sustained by punishment alone, collapses when enforcement falters.', resourceChanges: { gold: 50, military: 80, influence: -20, population: -100 }, relationshipChanges: { chronicler: -10 } };
+      default:
+        return { outcome: 'defeat', score: 1, narrative: 'Utopian: fails because it assumes people are Always Cooperate. Free riders multiply, trust shatters, the commune dissolves.', resourceChanges: { gold: -50, population: -200, influence: -30 }, relationshipChanges: { chronicler: -5 } };
+    }
+  },
   analyze: (choice, aiChoice, history) => {
     const baseAnalysis = 'The Society Designer is a meta-game that simulates how 100 AI agents with diverse personalities (cooperators, defectors, tit-for-tatters, grim triggers, risk-seekers, long-term planners, opportunists, fair players, deceivers, trust-builders) interact within the institutional structure you designed. Over 50 turns, patterns emerge: cooperation rates, inequality levels, innovation, conflict frequency, and overall welfare.';
 

@@ -245,10 +245,11 @@ function renderScenario(scenarioDef, instances) {
           const history = s.world.multiRoundHistory || [];
           const last = history[history.length - 1];
           if (!last) return '';
-          const you = last.playerChoice === 'fair' ? 'fair toll' : 'unfair toll';
-          const them = Object.values(last.aiChoices)[0] === 'fair' ? 'fair toll' : 'unfair toll';
+          const choiceLabels = Object.fromEntries(scenarioDef.choices.map(c => [c.id, c.label]));
+          const you = choiceLabels[last.playerChoice] || last.playerChoice;
+          const them = choiceLabels[Object.values(last.aiChoices)[0]] || Object.values(last.aiChoices)[0];
           const result = Object.values(last.result.resourceChanges || {}).reduce((a,b) => a+b, 0);
-          return `You charged ${you}. They charged ${them}. Net change: ${result >= 0 ? '+' : ''}${result} gold.`;
+          return `You chose ${you}. They chose ${them}. Net change: ${result >= 0 ? '+' : ''}${result} gold.`;
         })()}</p>
       </div>` : ''}
     </div>
@@ -575,38 +576,101 @@ function renderSandbox() {
 function renderTimeline() {
   const s = gameState.get();
   const history = s.history;
+  // Annotate history entries with scenario def, outcome, discovery info
+  const seenConcepts = new Set();
+  const annotated = history.map(entry => {
+    const def = scenarioRegistry.get(entry.scenario);
+    const scenarioName = def ? def.title : entry.scenario;
+    const era = def ? def.era : 0;
+    const outcome = entry.outcome || 'mixed';
+    const playerChoiceLabel = def ? (def.choices.find(c => c.id === entry.playerChoice)?.label || entry.playerChoice) : entry.playerChoice;
+    const aiLabels = entry.aiChoices ? Object.entries(entry.aiChoices).map(([agentId, choice]) => {
+      const agentName = def?.agents?.[agentId]?.name || agentId;
+      const choiceLabel = def ? (def.choices.find(c => c.id === choice)?.label || choice) : choice;
+      return { agentName, choiceLabel };
+    }) : [];
+    const delta = entry.resourceChanges ? Object.values(entry.resourceChanges).reduce((a, b) => a + b, 0) : 0;
+    const concept = def?.concept ? CONCEPTS[def.concept] : null;
+    let isDiscovery = false;
+    if (concept && !seenConcepts.has(concept.id)) {
+      seenConcepts.add(concept.id);
+      isDiscovery = true;
+    }
+    return { ...entry, scenarioName, era, outcome, playerChoiceLabel, aiLabels, delta, concept, isDiscovery, def };
+  });
+
+  const eras = [...new Set(annotated.map(e => e.era).filter(Boolean))].sort();
+  const victoryCount = annotated.filter(e => e.outcome === 'victory').length;
+  const defeatCount = annotated.filter(e => e.outcome === 'defeat').length;
+  const mixedCount = annotated.filter(e => e.outcome === 'mixed').length;
 
   _appRoot.innerHTML = `
     <div class="screen">
       <div class="scenario-header">
-        <h2 style="font-family: var(--font-display);">\u{1F4CB} Timeline</h2>
-        <button class="btn btn-secondary" onclick="App.showMenu()">\u{2190} Back</button>
+        <div>
+          <h2 style="font-family: var(--font-display);">\u{1F4CB} Timeline</h2>
+          <p style="color: var(--text-muted); font-size: 0.85rem;">
+            ${history.length} entries
+            ${history.length > 0 ? `| <span style="color:var(--accent-green)">\u{1F3C6}${victoryCount}</span> <span style="color:var(--accent-red)">\u{1F4A5}${defeatCount}</span> <span style="color:var(--accent-gold)">\u{2694}${mixedCount}</span>` : ''}
+          </p>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          ${history.length > 0 ? `
+          <select id="timeline-era-filter" style="padding:6px 10px; background:var(--bg-tertiary); border:1px solid var(--border-color); border-radius:var(--radius-sm); color:var(--text-primary); font-size:0.85rem;" onchange="App.showTimeline()">
+            <option value="all">All Eras</option>
+            ${eras.map(e => `<option value="${e}">Era ${e}</option>`).join('')}
+          </select>
+          ` : ''}
+          <button class="btn btn-secondary" onclick="App.showMenu()">\u{2190} Back</button>
+        </div>
       </div>
-      ${history.length === 0 ? `
+      ${annotated.length === 0 ? `
         <p style="color: var(--text-muted); text-align: center; margin-top: 40px;">
           No history yet. Play some scenarios first.
         </p>
       ` : `
         <div class="timeline-view" style="margin-top: 16px;">
-          ${history.slice().reverse().map(entry => {
-            const scenarioDef = scenarioRegistry.get(entry.scenario);
-            const scenarioName = scenarioDef ? scenarioDef.title : entry.scenario;
-            const delta = entry.resourceChanges ? 
-              Object.values(entry.resourceChanges).reduce((a, b) => a + b, 0) : 0;
-            const sign = delta > 0 ? '+' : '';
-            return `
-              <div class="timeline-entry">
-                <div class="turn-num">#${entry.turn + 1}</div>
-                <div class="turn-choice">
-                  <strong>${scenarioName}</strong>
-                  <span style="color: var(--text-muted);">\u{2192} ${entry.playerChoice}</span>
+          ${(() => {
+            const filterVal = typeof document !== 'undefined' && document.getElementById('timeline-era-filter')?.value || 'all';
+            const filtered = filterVal === 'all' ? annotated : annotated.filter(e => e.era === parseInt(filterVal));
+            const sorted = [...filtered].reverse();
+            return sorted.map(entry => {
+              const outcomeBadge = entry.outcome === 'victory'
+                ? '<span style="color:var(--accent-green); font-weight:600;">\u{1F3C6} Victory</span>'
+                : entry.outcome === 'defeat'
+                  ? '<span style="color:var(--accent-red); font-weight:600;">\u{1F4A5} Defeat</span>'
+                  : '<span style="color:var(--accent-gold); font-weight:600;">\u{2694} Mixed</span>';
+              const resourceBreakdown = entry.resourceChanges && Object.keys(entry.resourceChanges).length > 0
+                ? Object.entries(entry.resourceChanges).map(([k, v]) => {
+                    const icon = RESOURCE_ICONS[k] || '';
+                    const cls = v > 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+                    const sign = v > 0 ? '+' : '';
+                    return `<span style="color:${cls}; font-size:0.8rem; margin-right:8px;">${icon}${sign}${v}</span>`;
+                  }).join('')
+                : '<span style="color:var(--text-muted); font-size:0.8rem;">No change</span>';
+              const aiText = entry.aiLabels.length > 0
+                ? entry.aiLabels.map(a => `${a.agentName}: ${a.choiceLabel}`).join(' | ')
+                : '';
+              return `
+                <div class="timeline-entry" style="flex-wrap: wrap;">
+                  <div class="turn-num">#${entry.turn + 1}</div>
+                  <div class="turn-choice" style="min-width:0;">
+                    <div><strong>${entry.scenarioName}</strong> ${outcomeBadge}</div>
+                    <div style="color: var(--accent-gold); font-size:0.85rem;">${entry.playerChoiceLabel}</div>
+                    ${aiText ? `<div style="color: var(--text-muted); font-size:0.8rem;">\u{1F916} ${aiText}</div>` : ''}
+                    ${entry.isDiscovery && entry.concept ? `<div style="color: var(--accent-purple); font-size:0.8rem; margin-top:2px;">\u{1F4DC} Discovered: ${entry.concept.name}</div>` : ''}
+                  </div>
+                  <div class="turn-outcome" style="text-align:right; flex-shrink:0;">
+                    <div style="margin-bottom:4px;">${resourceBreakdown}</div>
+                    <div style="color: ${entry.delta >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'}; font-size:0.9rem; font-weight:600;">
+                      ${entry.delta >= 0 ? '+' : ''}${entry.delta} net
+                    </div>
+                    ${entry.era ? `<div style="color:var(--text-muted); font-size:0.75rem; margin-top:2px;">Era ${entry.era}</div>` : ''}
+                  </div>
                 </div>
-                <div class="turn-outcome" style="color: ${delta >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'}">
-                  ${sign}${delta}
-                </div>
-              </div>
-            `;
-          }).join('')}
+              `;
+            }).join('');
+          })()}
         </div>
       `}
     </div>
@@ -763,6 +827,7 @@ function renderAnalyticsDashboard() {
   const discRate = analytics.getDiscoveryRate();
   const avgTime = analytics.getAverageTimePerScenario();
 
+  // Choice distribution
   const choiceCounts = {};
   for (const e of choices) {
     const cid = e.data.choiceId;
@@ -771,6 +836,57 @@ function renderAnalyticsDashboard() {
   const sortedChoices = Object.entries(choiceCounts).sort((a, b) => b[1] - a[1]);
   const maxChoice = sortedChoices.length > 0 ? sortedChoices[0][1] : 1;
 
+  // Outcome distribution
+  const outcomeCounts = { victory: 0, defeat: 0, mixed: 0 };
+  for (const e of choices) {
+    const o = e.data.outcome;
+    if (o === 'victory') outcomeCounts.victory++;
+    else if (o === 'defeat') outcomeCounts.defeat++;
+    else outcomeCounts.mixed++;
+  }
+  const maxOutcome = Math.max(1, outcomeCounts.victory, outcomeCounts.defeat, outcomeCounts.mixed);
+
+  // Era breakdown
+  const eraCounts = {};
+  const seenScenarios = new Set();
+  for (const e of choices) {
+    const sid = e.data.scenarioId;
+    if (!seenScenarios.has(sid)) {
+      seenScenarios.add(sid);
+      const def = scenarioRegistry.get(sid);
+      const era = def ? def.era : 0;
+      eraCounts[era] = (eraCounts[era] || 0) + 1;
+    }
+  }
+  for (let i = 1; i <= 6; i++) { if (!eraCounts[i]) eraCounts[i] = 0; }
+  const maxEra = Math.max(1, ...Object.values(eraCounts));
+
+  // Cooperation trend (groups of 5 choices sorted chronologically)
+  const sortedByTime = [...choices].sort((a, b) => a.timestamp - b.timestamp);
+  const trendGroups = [];
+  const groupSize = 5;
+  for (let i = 0; i < sortedByTime.length; i += groupSize) {
+    const group = sortedByTime.slice(i, i + groupSize);
+    if (group.length === 0) continue;
+    const coopCount = group.filter(e => {
+      const cid = e.data.choiceId;
+      return cid === 'honor' || cid === 'share' || cid === 'fair' || cid === 'cooperate' || cid === 'ration' || cid === 'negotiate';
+    }).length;
+    trendGroups.push({ label: `#${i + 1}`, rate: coopCount / group.length });
+  }
+
+  // Discovered concepts
+  const s = gameState.get();
+  const discoveredIds = s.player.discoveries || [];
+  const discoveredConcepts = discoveredIds.map(id => CONCEPTS[id]).filter(Boolean);
+
+  // Resource history
+  const resHist = gameState.get().resourcesHistory || [];
+  const recentHistory = resHist.slice(-20);
+  const maxGold = Math.max(1, ...recentHistory.map(h => h.resources?.gold || 0));
+  const maxMilitary = Math.max(1, ...recentHistory.map(h => h.resources?.military || 0));
+
+  // Retry rates
   const scenarioRetries = {};
   for (const e of completions) {
     const sid = e.data.scenarioId;
@@ -795,6 +911,7 @@ function renderAnalyticsDashboard() {
         <button class="btn btn-secondary" onclick="App.showMenu()">\u{2190} Back</button>
       </div>
 
+      <!-- KPI Cards -->
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 16px 0;">
         <div class="resources-delta" style="text-align: center;">
           <div style="font-size: 2rem; color: var(--accent-gold);">${totalPlayed}</div>
@@ -814,11 +931,58 @@ function renderAnalyticsDashboard() {
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      <!-- Row 1: Outcome Distribution + Era Breakdown -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+        <div class="resources-delta">
+          <h3>Outcome Distribution</h3>
+          ${choices.length === 0 ? '<p style="color: var(--text-muted);">No data yet.</p>' : `
+            ${['victory', 'defeat', 'mixed'].map(o => {
+              const count = outcomeCounts[o];
+              const pct = choices.length > 0 ? (count / choices.length * 100).toFixed(1) : 0;
+              const color = o === 'victory' ? 'var(--accent-green)' : o === 'defeat' ? 'var(--accent-red)' : 'var(--accent-gold)';
+              const icon = o === 'victory' ? '\u{1F3C6}' : o === 'defeat' ? '\u{1F4A5}' : '\u{2694}';
+              const label = o === 'victory' ? 'Victory' : o === 'defeat' ? 'Defeat' : 'Mixed';
+              return `
+                <div style="margin-bottom: 8px;">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                    <span>${icon} ${label}</span>
+                    <span style="color: var(--text-muted);">${count} (${pct}%)</span>
+                  </div>
+                  <div style="height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden;">
+                    <div style="height: 100%; width: ${(count / maxOutcome * 100).toFixed(1)}%; background: ${color}; border-radius: 4px;"></div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          `}
+        </div>
+        <div class="resources-delta">
+          <h3>By Era</h3>
+          ${sortedChoices.length === 0 ? '<p style="color: var(--text-muted);">No data yet.</p>' : `
+            ${[1,2,3,4,5,6].map(era => {
+              const count = eraCounts[era] || 0;
+              return `
+                <div style="margin-bottom: 6px;">
+                  <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                    <span>Era ${era}</span>
+                    <span style="color: var(--text-muted);">${count}</span>
+                  </div>
+                  <div style="height: 6px; background: var(--bg-tertiary); border-radius: 3px; overflow: hidden;">
+                    <div style="height: 100%; width: ${(count / maxEra * 100).toFixed(1)}%; background: var(--accent-blue); border-radius: 3px;"></div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          `}
+        </div>
+      </div>
+
+      <!-- Row 2: Choice Distribution + Cooperation Trend -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
         <div class="resources-delta">
           <h3>Choice Distribution</h3>
           ${sortedChoices.length === 0 ? '<p style="color: var(--text-muted);">No choices tracked yet.</p>' : `
-            <div style="margin-top: 8px;">
+            <div style="margin-top: 8px; max-height: 300px; overflow-y: auto;">
               ${sortedChoices.map(([cid, count]) => `
                 <div style="margin-bottom: 6px;">
                   <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
@@ -829,6 +993,40 @@ function renderAnalyticsDashboard() {
                     <div style="height: 100%; width: ${(count / maxChoice * 100).toFixed(1)}%; background: var(--accent-gold); border-radius: 3px;"></div>
                   </div>
                 </div>
+              `).join('')}
+            </div>
+          `}
+        </div>
+        <div class="resources-delta">
+          <h3>Cooperation Trend <span style="color:var(--text-muted); font-weight:400; text-transform:none; letter-spacing:0; font-size:0.8rem;">(per ${groupSize} choices)</span></h3>
+          ${trendGroups.length < 2 ? '<p style="color: var(--text-muted);">Need more choices to show trend.</p>' : `
+            <div style="margin-top: 8px; display: flex; align-items: end; gap: 3px; height: 100px;">
+              ${trendGroups.map(g => `
+                <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:end; height:100%;">
+                  <div style="width:100%; background: ${g.rate >= 0.5 ? 'var(--accent-green)' : 'var(--accent-red)'}; border-radius: 2px 2px 0 0; height: ${Math.max(2, g.rate * 100)}%; min-height: ${g.rate > 0 ? '4px' : '2px'}; transition: height 0.3s;"></div>
+                  <span style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; white-space:nowrap;">${g.label}</span>
+                </div>
+              `).join('')}
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--text-muted); margin-top:4px;">
+              <span>0%</span>
+              <span>50%</span>
+              <span>100%</span>
+            </div>
+          `}
+        </div>
+      </div>
+
+      <!-- Row 3: Discovered Concepts + Retry Rates -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+        <div class="resources-delta">
+          <h3>Discovered Concepts <span style="color:var(--text-muted); font-weight:400; text-transform:none; letter-spacing:0; font-size:0.8rem;">(${discoveredConcepts.length}/${Object.keys(CONCEPTS).length})</span></h3>
+          ${discoveredConcepts.length === 0 ? '<p style="color: var(--text-muted);">No concepts discovered yet.</p>' : `
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
+              ${discoveredConcepts.map(c => `
+                <span style="background: rgba(188,140,255,0.15); color: var(--accent-purple); padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; border: 1px solid rgba(188,140,255,0.2); cursor:pointer;" onclick="App.showConceptDetail('${c.id}')">
+                  \u{1F4DC} ${c.name}
+                </span>
               `).join('')}
             </div>
           `}
@@ -851,6 +1049,34 @@ function renderAnalyticsDashboard() {
           `}
         </div>
       </div>
+
+      <!-- Resource History -->
+      ${recentHistory.length > 1 ? `
+      <div class="resources-delta" style="margin-bottom: 16px;">
+        <h3>Resource History <span style="color:var(--text-muted); font-weight:400; text-transform:none; letter-spacing:0; font-size:0.8rem;">(last ${recentHistory.length} turns)</span></h3>
+        <div style="margin-top: 8px;">
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:4px;">Gold</div>
+          <div style="display: flex; align-items: end; gap: 2px; height: 50px;">
+            ${recentHistory.map(h => {
+              const g = h.resources?.gold || 0;
+              return `<div style="flex:1; height: ${Math.max(2, g / maxGold * 100)}%; background: var(--accent-gold); border-radius: 2px 2px 0 0;" title="Turn ${h.turn}: ${g} gold"></div>`;
+            }).join('')}
+          </div>
+        </div>
+        <div style="margin-top: 8px;">
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:4px;">Military</div>
+          <div style="display: flex; align-items: end; gap: 2px; height: 50px;">
+            ${recentHistory.map(h => {
+              const m = h.resources?.military || 0;
+              return `<div style="flex:1; height: ${Math.max(2, m / maxMilitary * 100)}%; background: var(--accent-red); border-radius: 2px 2px 0 0;" title="Turn ${h.turn}: ${m} military"></div>`;
+            }).join('')}
+          </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--text-muted); margin-top:4px;">
+          <span>${recentHistory[0]?.completedCount || 0} scenarios</span>
+          <span>${recentHistory[recentHistory.length - 1]?.completedCount || 0} scenarios</span>
+        </div>
+      </div>` : ''}
 
       <div style="margin-top: 16px; text-align: center;">
         <button class="btn btn-primary" onclick="App.exportAnalyticsCSV()">\u{1F4E5} Export CSV</button>
