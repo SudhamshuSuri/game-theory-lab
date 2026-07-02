@@ -15,6 +15,7 @@ import { createAgentFromPersonality } from './ai/personality.js';
 import { analytics } from './analytics/tracker.js';
 import { CONCEPTS } from './data/concepts.js';
 import { FLAVOR } from './data/flavor.js';
+import { RESOURCE_ICONS } from './simulation/resources.js';
 import { setAppRoot, render } from './ui/components.js';
 
 const saveManager = new SaveManager(gameState);
@@ -717,24 +718,31 @@ window.App = {
       return;
     }
 
-    const pScore = entry.pScore !== undefined ? entry.pScore : (entry.result?.player || 0);
-    const aScore = entry.aScore !== undefined ? entry.aScore : (entry.result?.ai || 0);
+    const pScore = entry.pScore !== undefined ? entry.pScore : (entry.result?.score ?? entry.result?.player ?? 0);
+    const aScore = entry.aScore !== undefined ? entry.aScore : (entry.result?.ai ?? 0);
     const playerRaw = entry.playerChoice || entry.aiChoices?.['player'] || '?';
     const playerLabel = (scenario.choices || []).find(c => c.id === playerRaw)?.label || playerRaw;
     const aiRaw = entry.aiChoice || Object.values(entry.aiChoices || {})[0] || '?';
     const aiLabel = (scenario.choices || []).find(c => c.id === aiRaw)?.label || aiRaw;
+
+    const deltaHtml = entry.resourceChanges ? Object.entries(entry.resourceChanges).map(([k, v]) => {
+      const icon = RESOURCE_ICONS[k] || '';
+      const sign = v >= 0 ? '+' : '';
+      const color = v >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+      return `<span style="color:${color}; font-size:0.85rem; margin-right:8px;">${icon}${sign}${v}</span>`;
+    }).join('') : '';
 
     content.innerHTML = `
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
         <div style="background: var(--bg-secondary); padding: 16px; border-radius: var(--radius-md);">
           <h4 style="color: var(--accent-blue); margin-bottom: 8px;">You</h4>
           <div style="font-size: 1.2rem; font-weight: 600; color: var(--text-primary);">${playerLabel}</div>
-          <div style="color: var(--accent-green); font-size: 1.5rem; margin-top: 8px;">+${pScore}</div>
+          ${deltaHtml ? `<div style="margin-top: 6px; color: var(--text-muted); font-size:0.85rem;">${deltaHtml}</div>` : `<div style="color: var(--accent-green); font-size: 1.5rem; margin-top: 8px;">+${pScore}</div>`}
         </div>
         <div style="background: var(--bg-secondary); padding: 16px; border-radius: var(--radius-md);">
           <h4 style="color: var(--accent-red); margin-bottom: 8px;">AI</h4>
           <div style="font-size: 1.2rem; font-weight: 600; color: var(--text-primary);">${aiLabel}</div>
-          <div style="color: var(--accent-red); font-size: 1.5rem; margin-top: 8px;">+${aScore}</div>
+          ${deltaHtml ? `<div style="margin-top: 6px; color: var(--text-muted); font-size:0.85rem;">${deltaHtml}</div>` : `<div style="color: var(--text-muted); font-size: 1.5rem; margin-top: 8px;">+${pScore}</div>`}
         </div>
       </div>
       <div style="margin-top: 12px; padding: 12px; background: var(--bg-secondary); border-radius: var(--radius-md);">

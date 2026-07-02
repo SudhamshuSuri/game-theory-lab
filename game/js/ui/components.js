@@ -777,7 +777,7 @@ function setupEditorButton(id, action) {
 
 // ===================== REPLAY MODE =====================
 function renderReplay(data) {
-  const { scenario, history, aiChoices, result } = data;
+  const { scenario, history, aiChoices, result } = data.replayData || data;
   const steps = history || [];
   const totalSteps = steps.length;
 
