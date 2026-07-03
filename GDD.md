@@ -75,11 +75,11 @@ After the Collapse of the Old Empire, the coast fractured into a dozen city-stat
 
 ---
 
-## 4. Learning Progression (60+ Scenarios)
+## 4. Learning Progression (69+ Scenarios)
 
-The game is divided into 6 eras, each teaching a family of concepts.
+The game is divided into 6 eras, each teaching a family of concepts, plus a **Boss Fight** at the end of each era.
 
-### Era I: Foundations (Scenarios 1–10)
+### Era I: Foundations (Scenarios 1–10 + Boss)
 
 *Core concepts of strategic decision-making under scarcity.*
 
@@ -95,16 +95,17 @@ The game is divided into 6 eras, each teaching a family of concepts.
 | 8 | The Fisherman's Dilemma | Tragedy of the commons | A shared lake is being overfished. Each fisherman maximizes their catch, but collectively they destroy the resource. |
 | 9 | The Toll Bridge | Coordination game | Two villages must choose which bridge to repair. They both prefer the same choice. The cost is being alone. |
 | 10 | The Harvest Festival | Public goods | A festival benefits everyone but costs the organizer. Everyone benefits if someone organizes, but no one wants to pay. |
+| B1 | The King's Decree | Boss: Synthesis | A neighboring king demands tribute or war. Multiple factors (economy, allies, reputation) converge into one high-stakes decision. |
 
 **Era I Unlock:** The player receives their first "Discovery Card" — **Prisoner's Dilemma** — explaining what they've been experiencing.
 
-### Era II: Repetition & Reputation (Scenarios 11–20)
+### Era II: Repetition & Reputation (Scenarios 11–20 + Boss)
 
 *How repeated interactions change strategy.*
 
 | # | Scenario | Concept | Setting |
 |---|----------|---------|---------|
-| 11 | The Trade Route (Repeated PD) | Iterated Prisoner's Dilemma | The same trade partner, many rounds. Past choices matter. |
+| 11 | The Guild Apprentice | Iterated Prisoner's Dilemma | The same trade partner, many rounds. Past choices matter. |
 | 12 | The Caravan Guard | Tit-for-Tat | A neighboring kingdom offers a mutual protection pact. Player discovers that mirroring works best. |
 | 13 | The Exiled Knight | Grim Trigger | A single betrayal ends all cooperation forever. The player learns why some violations are unforgivable. |
 | 14 | The Merchant's Ledger | Reputation, shadow of the future | Word spreads of your deals. A bad reputation closes doors. A good one opens them. |
@@ -114,10 +115,11 @@ The game is divided into 6 eras, each teaching a family of concepts.
 | 18 | The Tax Farmer | Moral hazard | A tax farmer pays you upfront for the right to collect taxes. He overtaxes the people because you already got paid. |
 | 19 | The Royal Surveyor | Adverse selection, screening | You need a loyal advisor. Liars claim loyalty louder than the loyal. How do you filter? |
 | 20 | The Siege | Commitment problems | You promise not to attack if the gates open. They don't believe you. How do you make them believe? |
+| B2 | Too Big to Fail | Boss: Systemic Risk | A guild is on the verge of collapse. Bailing them out prevents economic contagion but rewards recklessness. Letting them fail triggers a cascade. |
 
 **Era II Unlock:** "Discovery Card" — **Tit-for-Tat**, **Grim Trigger**, **Credible Commitment**, **Principal-Agent Problem**.
 
-### Era III: Uncertainty & Information (Scenarios 21–30)
+### Era III: Uncertainty & Information (Scenarios 21–30 + Boss)
 
 *Strategic decision-making with incomplete information.*
 
@@ -133,10 +135,11 @@ The game is divided into 6 eras, each teaching a family of concepts.
 | 28 | The Spreading Rumor | Information cascades | A rumor spreads. People believe not what's true, but what they hear others believing. |
 | 29 | The Trade Embargo | Coalition formation, voting | A vote to embargo a rival. You need 3 of 5 votes. Coalitions form and shift. |
 | 30 | The Whispers | Cheap talk | Communication without cost. Can words alone create cooperation? (Usually not, but sometimes yes.) |
+| B3 | Operation Deception | Boss: Misdirection | A WWI-inspired deception campaign. Your feint must be believable enough to draw enemy reserves, but not so costly it becomes a real defeat. |
 
 **Era III Unlock:** "Discovery Cards" — **Bayesian Games**, **Signaling**, **Screening**, **Chicken**, **Cheap Talk**.
 
-### Era IV: Markets & Mechanism (Scenarios 31–40)
+### Era IV: Markets & Mechanism (Scenarios 31–40 + Boss)
 
 *Market design, auctions, and incentive engineering.*
 
@@ -152,10 +155,11 @@ The game is divided into 6 eras, each teaching a family of concepts.
 | 38 | The Royal Mint | Public goods provision | Funding the army benefits everyone. How do you collect contributions without free riders? |
 | 39 | The Bad Road | Congestion game | Two routes to the market. Everyone takes the short one. Now it's congested and slower than the long one. |
 | 40 | The New Trade Route | Network effects | A trade route becomes more valuable as more use it. Early adopters vs late joiners. |
+| B4 | The Silk Road Summit | Boss: Grand Bargain | Competing empires meet to divide trade routes. Every handshake hides a knife. Forge the deal that survives the night. |
 
 **Era IV Unlock:** "Discovery Cards" — **Auctions (4 types)**, **Voting Systems**, **Mechanism Design**, **Congestion**, **Network Effects**.
 
-### Era V: Society & Evolution (Scenarios 41–50)
+### Era V: Society & Evolution (Scenarios 41–50 + Boss)
 
 *How strategies spread, evolve, and shape societies.*
 
@@ -171,10 +175,11 @@ The game is divided into 6 eras, each teaching a family of concepts.
 | 48 | The Nomads vs Settlers | Conflict, property rights | Nomads and settlers both need the land. Different concepts of ownership cause tension. |
 | 49 | The Plague | Cooperation under threat | A plague threatens all. Self-isolation saves you but dooms others. Mutual isolation saves everyone. |
 | 50 | The Memorial | Common-pool resource management | The fishing lake again. But now you can design the management system. Compare with #8. |
+| B5 | The Cuban Quarantine | Boss: Brinkmanship | A naval blockade during the Cold War. Every move toward war escalates; every retreat loses credibility. Navigate the most dangerous game of Chicken ever played. |
 
 **Era V Unlock:** "Discovery Cards" — **Evolutionary Game Theory**, **ESS**, **Coalition Game Theory**, **Mechanism Design II**.
 
-### Era VI: Mastery (Scenarios 51–60+)
+### Era VI: Mastery (Scenarios 51–60+ + Boss)
 
 *Synthesis, real-world applications, and society design.*
 
@@ -189,7 +194,7 @@ The game is divided into 6 eras, each teaching a family of concepts.
 | 57 | The Distributed Ledger | Blockchain, consensus mechanisms | Design a consensus protocol. Trade off security, speed, and decentralization. |
 | 58 | The Cloud Wars | Computing resource allocation | Multiple services share computing resources. Peak demand causes congestion. Dynamic pricing emerges. |
 | 59 | The Social Network | Network games, platform design | Design a social network. Attention is the resource. Engagement vs well-being trade-off. |
-| 60 | The Society | Capstone: design your own society | All tools unlocked. Design laws, taxes, markets, punishments, rewards. Run for 100 turns. AI agents adapt. |
+| B6 | The Paris Accord | Boss: Global Cooperation | Climate change is the ultimate collective action problem. Each nation's choice affects all. Can you forge a treaty that holds? |
 
 **Era VI Unlock:** All remaining "Discovery Cards". Player receives a **Certificate of Strategic Mastery**.
 
@@ -199,14 +204,24 @@ The game is divided into 6 eras, each teaching a family of concepts.
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                 SCENARIO SELECTION                   │
-│  Choose a scenario. Each teaches a strategic concept.│
+│                 TITLE SCREEN                          │
+│  New Game | Continue | Encyclopedia | Sandbox        │
+│  Timeline | Analytics | Editor                       │
 └────────────────────┬────────────────────────────────┘
                      │
                      ▼
 ┌─────────────────────────────────────────────────────┐
-│                 CONTEXT & SETUP                      │
-│  Scenario background. Characters. Stakes. Rules.     │
+│                 MENU / ERA SELECTION                  │
+│  6 eras with locked/unlocked status.                 │
+│  X/Y scenarios completed per era.                    │
+│  Boss challenge unlocks when all era scenarios done. │
+└────────────────────┬────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────┐
+│                 SCENARIO VIEW                         │
+│  Scenario background. Characters. Stakes.            │
+│  Multi-round indicator if applicable.                │
 │  No strategy advice—just the situation.              │
 └────────────────────┬────────────────────────────────┘
                      │
@@ -214,7 +229,7 @@ The game is divided into 6 eras, each teaching a family of concepts.
 ┌─────────────────────────────────────────────────────┐
 │              DECISION POINT                          │
 │  Player chooses from 2-4 options.                    │
-│  Options are framed naturally.                       │
+│  Options framed naturally (risk tags shown).         │
 │  "Share the food" not "Cooperate"                    │
 └────────────────────┬────────────────────────────────┘
                      │
@@ -222,15 +237,17 @@ The game is divided into 6 eras, each teaching a family of concepts.
 ┌─────────────────────────────────────────────────────┐
 │              AI RESPONSE                             │
 │  AI agents respond based on personality + context.   │
-│  Outcome calculated from combined decisions.         │
+│  Decision engine uses weighted random strategy.      │
 └────────────────────┬────────────────────────────────┘
                      │
                      ▼
 ┌─────────────────────────────────────────────────────┐
 │              RESULTS & REFLECTION                    │
-│  Show what happened. Why.                             │
-│  Payoffs. Changed relationships.                     │
-│  "Why You Lost" analysis.                            │
+│  Show what happened and why.                         │
+│  Payoffs. Resource changes. Relationship changes.    │
+│  "Optimal Strategy" insight.                         │
+│  "Analysis" section for scenario-specific lessons.   │
+│  Replay mode available.                              │
 └────────────────────┬────────────────────────────────┘
                      │
                      ▼
@@ -238,20 +255,21 @@ The game is divided into 6 eras, each teaching a family of concepts.
 │              PATTERN RECOGNITION                     │
 │  After experiencing the concept:                     │
 │  "You discovered: The Prisoner's Dilemma"            │
-│  Clear explanation. Real-world examples.             │
-│  How to apply this knowledge.                        │
+│  Overlay card with explanation and real-world ex.    │
+│  Added to Encyclopedia for later reference.          │
 └────────────────────┬────────────────────────────────┘
                      │
                      ▼
-┌─────────────────────────────────────────────────────┐
-│              REINFORCEMENT                           │
-│  Similar scenario with different framing.            │
-│  Can the player apply what they learned?             │
-└────────────────────┬────────────────────────────────┘
-                     │
-                     ▼
-         (progress to next scenario)
+          (progress to next scenario or menu)
 ```
+
+**Additional features available from menu:**
+- **Sandbox Mode**: Simulation sandbox with game type, AI personality, rounds, and heatmap visualization.
+- **Scenario Editor**: Create and test custom scenarios with choices, agents, and payoff matrices.
+- **Timeline**: Chronological history of all completed scenarios with filters.
+- **Analytics Dashboard**: KPIs, outcome distribution, choice trends, era breakdown, cooperation trend, resource history.
+- **Encyclopedia**: All discovered game theory concepts with detailed explanations.
+- **Replay Mode**: Step-through replay of any completed multi-round scenario.
 
 ---
 
@@ -317,61 +335,90 @@ The learning agent maintains:
 ### 7.1 Module Structure
 
 ```
-src/
-├── index.html              # Entry point
+game/
+├── index.html              # Entry point (minimal, <div id="app"> + module script)
 ├── css/
-│   ├── main.css           # Core styles
-│   ├── components.css     # UI component styles
-│   ├── animations.css     # Transitions and animations
-│   └── themes.css         # Visual themes
+│   ├── main.css           # Core layout, theme variables, dark mode
+│   ├── components.css     # UI component styles (cards, buttons, dialogs)
+│   └── animations.css     # Transitions, stagger children, fade-in
 ├── js/
-│   ├── main.js            # Entry point, initialization
+│   ├── main.js            # Entry point, window.App controller (855 lines)
 │   ├── engine/
-│   │   ├── core.js        # Game loop, state management
-│   │   ├── state.js       # Global game state
-│   │   ├── events.js      # Event bus
-│   │   └── storage.js     # Save/load system
+│   │   ├── core.js        # Scenario lifecycle, event wiring
+│   │   ├── state.js       # Global game state (GameState class + createInitialState)
+│   │   ├── events.js      # Event bus (pub/sub)
+│   │   └── storage.js     # SaveManager (localStorage: 3 slots + autosave + settings)
 │   ├── scenarios/
-│   │   ├── registry.js    # Scenario registry
-│   │   ├── loader.js      # Scenario loading
-│   │   └── definitions/   # One file per scenario era
+│   │   ├── registry.js    # Scenario registry (register, get, getByEra, isUnlocked)
+│   │   ├── definitions-era1.js  # Scenarios 1-10 + Boss 1
+│   │   ├── definitions-era2.js  # Scenarios 11-20 + Boss 2
+│   │   ├── definitions-era3.js  # Scenarios 21-30 + Boss 3
+│   │   ├── definitions-era4.js  # Scenarios 31-40 + Boss 4
+│   │   ├── definitions-era5.js  # Scenarios 41-50 + Boss 5
+│   │   └── definitions-era6.js  # Scenarios 51-59 + Boss 6
 │   ├── simulation/
-│   │   ├── payoff.js      # Payoff matrix calculator
-│   │   ├── resolution.js  # Outcome resolver
-│   │   ├── resources.js   # Resource management
-│   │   └── reputation.js  # Reputation tracking
+│   │   ├── resolution.js  # Outcome resolver (PD, Market, Stag Hunt, Chicken, etc.)
+│   │   ├── payoff.js      # Payoff matrix calculators
+│   │   └── resources.js   # Resource icons, labels, descriptions
 │   ├── ai/
-│   │   ├── personality.js # Personality definitions
-│   │   ├── decision.js    # Decision engine
-│   │   ├── memory.js      # Interaction memory
-│   │   └── learning.js    # Adaptive learning agent
+│   │   ├── personality.js # 14 personality presets + factory functions
+│   │   ├── decision.js    # Decision engine (weighted random strategy selection)
+│   │   └── memory.js      # Interaction history tracking per agent
 │   ├── ui/
-│   │   ├── router.js      # Screen routing
-│   │   ├── components/    # UI components
-│   │   │   ├── scenario.js    # Scenario presentation
-│   │   │   ├── choices.js     # Decision UI
-│   │   │   ├── results.js     # Outcome display
-│   │   │   ├── dialogue.js    # Character dialogue
-│   │   │   ├── timeline.js    # History viewer
-│   │   │   ├── discovery.js   # Concept unlock
-│   │   │   ├── sandbox.js     # Sandbox mode
-│   │   │   └── analysis.js    # Post-game analysis
-│   │   └── screens/
-│   │       ├── title.js       # Title screen
-│   │       ├── menu.js        # Main menu
-│   │       ├── world.js       # World map screen
-│   │       ├── council.js     # Council/status screen
-│   │       └── encyclopedia.js # Discovery encyclopedia
+│   │   └── components.js  # ALL UI rendering (1123 lines): title, menu, scenario,
+│   │                      # results, discovery, encyclopedia, sandbox, timeline,
+│   │                      # editor, replay, analytics dashboard, concept detail
 │   ├── data/
-│   │   ├── factions.js    # Faction definitions
-│   │   ├── concepts.js    # Game theory concept library
-│   │   └── flavor.js      # Thematic text
+│   │   ├── concepts.js    # 26 game theory concepts with explanations + payoff matrices
+│   │   └── flavor.js      # Thematic flavor text + BOSS_FIGHTS metadata
 │   └── analytics/
-│       ├── tracker.js     # Learning analytics
-│       └── export.js      # Data export
+│       ├── tracker.js     # Event tracking with localStorage persistence
+│       └── export.js      # CSV export utility
+├── tests/
+│   └── test.js            # Test file
+└── server.py              # Simple Python HTTP server for development
 ```
 
-### 7.2 Data Flow
+*Note: The GDD originally specified a more granular `ui/components/` and `ui/screens/` directory structure with individual files per screen. In practice, all rendering lives in a single `components.js` to simplify navigation and avoid import boilerplate. The `ui/router.js` was also eliminated — routing is handled by a `render()` switch statement within `components.js`.*
+
+### 7.2 State Management
+
+The central `gameState` object uses a reactive pattern with listener notification:
+
+```javascript
+gameState = {
+  player: {
+    resources: { gold, food, population, military, influence, knowledge },
+    relationships: { factionId: trustScore },
+    reputation: 0-100,
+    discoveries: [],
+    completedScenarios: [],
+    stats: { scenariosPlayed, choicesMade, cooperations, defections, retries },
+  },
+  world: {
+    factions: {},
+    turn: 0,
+    era: 1,
+    currentScenario: null,
+    currentRound: 0,
+    multiRoundHistory: [],
+    pendingDiscovery: null,
+  },
+  history: [
+    { turn, scenario, playerChoice, aiChoices, outcome, resourceChanges, timestamp }
+  ],
+  settings: { difficulty, soundEnabled, theme, showTutorials },
+  meta: { version, createdAt, updatedAt, playTime },
+  resourcesHistory: [
+    { turn, timestamp, resources, reputation, completedCount }
+  ],
+  waypoints: [
+    { scenarioId, score, outcome, order, timestamp, resources }
+  ],
+}
+```
+
+### 7.3 Data Flow
 
 ```
 User Input → Event Bus → Scenario Engine → AI Decision Engine
@@ -383,32 +430,6 @@ User Input → Event Bus → Scenario Engine → AI Decision Engine
                               State Update → Event Bus → UI Render
                                               ↓
                               Analytics Tracker → Storage
-```
-
-### 7.3 State Management
-
-```javascript
-// Central game state
-gameState = {
-  player: {
-    resources: { gold, food, population, military, influence, knowledge },
-    relationships: { factionId: trustScore },
-    reputation: 0-100,
-    discoveries: [],
-    completedScenarios: [],
-    stats: { /* aggregate metrics */ },
-  },
-  world: {
-    factions: { factionId: { resources, relationships, alive } },
-    turn: 0,
-    era: 1,
-    currentScenario: null,
-  },
-  history: [
-    { turn, scenario, playerChoice, aiChoices, outcome, payoffs }
-  ],
-  settings: { difficulty, sound, theme },
-}
 ```
 
 ---
@@ -529,11 +550,20 @@ gameState = {
 
 ### 9.3 Analytics Dashboard (for teachers/players)
 
-- Concept mastery heatmap
-- Decision patterns over time
-- Strategy effectiveness comparison
-- AI behavior recognition accuracy
-- Time-to-discovery metrics
+Implemented KPIs and visualizations:
+
+- **KPI Cards:** Scenarios played, cooperation rate (%), discovery rate (%), avg time/scenario
+- **Outcome Distribution:** Victory / Defeat / Mixed breakdown with horizontal bar chart
+- **By Era:** Scenario count per era with horizontal bars
+- **Choice Distribution:** Sorted frequency of each choice made, with bar chart
+- **Cooperation Trend:** Rolling cooperation rate grouped in batches of 5 choices, shown as vertical bar chart
+- **Discovered Concepts:** Tag cloud of all discovered concepts
+- **Retry Rates:** Re-attempt counts per scenario
+- **Resource History:** Gold and military trend chart (last 20 turns)
+- **Export CSV:** Download all tracked events as CSV
+- **Clear Data:** Full reset of analytics events, game state, and autosave
+
+All visualizations are implemented as pure HTML/CSS (no canvas or charting library).
 
 ---
 
@@ -566,115 +596,139 @@ gameState = {
 
 ## 11. Educational Features
 
-### 11.1 Replay Mode
+### 11.1 Replay Mode ✅
 
-Watch any completed scenario play out step-by-step. See what each agent knew and chose at each decision point. Overlay the payoff matrix.
+Watch any completed scenario play out step-by-step with a slider and prev/next navigation. See what each agent chose at each decision point. Includes final summary.
 
-### 11.2 Timeline Viewer
+### 11.2 Timeline Viewer ✅
 
-Scroll through your entire game history. See how relationships, resources, and strategy evolved. Filter by concept, faction, or outcome type.
+Scroll through your entire game history. See how relationships, resources, and strategy evolved. Filter by era. Victory/defeat/mixed badges. Discovery annotations. Resource change breakdown per entry.
 
-### 11.3 Strategy Comparison
+### 11.3 Concept Discovery Overlay ✅
 
-Compare two scenarios side by side. See how changing one variable (e.g., making it a repeated game) changes optimal strategy.
+After experiencing a concept, a full-screen overlay appears with the concept name, quote, explanation, real-world examples, payoff matrix, and strategic insight. Added to Encyclopedia automatically.
 
-### 11.4 Heatmaps
+### 11.4 Encyclopedia ✅
 
-Visual representation of your decisions. Which choices do you over/under-use? Where are your blind spots?
+Browse all discovered (and locked) game theory concepts. Locked concepts show as "???" to avoid spoilers. Click to view full concept detail in an overlay.
 
-### 11.5 Decision Trees
+### 11.5 Sandbox Mode ✅
 
-For any scenario, view the complete decision tree. What would have happened if you chose differently?
+Choose game type (Prisoner's Dilemma, Stag Hunt, Chicken, Coordination, Market, Public Goods, Tragedy of the Commons), AI personality, and number of rounds. Results show per-round breakdown, total scores, and a heatmap of choice frequencies.
 
-### 11.6 AI Reasoning Viewer
+### 11.6 Scenario Editor ✅
 
-After a scenario concludes, see exactly what each AI agent was thinking: their personality analysis, what they predicted you would do, and why they chose what they did.
+Create custom scenarios with title, era, concept, game type, choices, AI agents, and payoff matrix. Save to localStorage, load, edit, delete, and test-run custom scenarios. Full CRUD workflow.
 
-### 11.7 Sandbox Mode
+### 11.7 Boss Fights ✅
 
-After completing Era III, sandbox unlocks. Choose factions, set their personalities, design payoff matrices, and run simulations. See what strategies emerge.
+Each era ends with a real-world inspired boss scenario (King's Decree, Too Big to Fail, Operation Deception, Silk Road Summit, Cuban Quarantine, Paris Accord). Locked until all normal scenarios in the era are completed.
 
-### 11.8 Scenario Editor
+### 11.8 Analytics Dashboard ✅
 
-Create custom scenarios. Define the setting, characters, choices, AI personalities, and payoff matrices. Share with the community.
+See Section 9.3 for full details. KPIs, charts, CSV export, and data clearing.
 
-### 11.9 Challenge Mode
+### 11.9 Strategy Comparison 🚧
 
-Weekly challenges with constraints (e.g., "Win this scenario without using Tit-for-Tat"). Leaderboards.
+*Not yet implemented.* Planned: Compare two scenarios side by side.
 
-### 11.10 Daily Puzzle
+### 11.10 Decision Trees 🚧
 
-A single scenario with a unique twist. One chance to solve it. Compare your answer with the community.
+*Not yet implemented.* Planned: For any scenario, view the complete decision tree.
 
-### 11.11 Infinite Procedural Scenarios
+### 11.11 AI Reasoning Viewer 🚧
 
-Using template permutations, generate infinite scenarios that teach the same concepts with different framing.
+*Not yet implemented.* Planned: After a scenario, see each AI agent's personality analysis, predictions, and decision rationale.
+
+### 11.12 Heatmaps ✅
+
+Implemented in Sandbox mode. Choice frequency heatmap shows player vs AI decision patterns.
+
+### 11.13 Challenge Mode 🚧
+
+*Not yet implemented.* Planned: Weekly challenges with constraints.
+
+### 11.14 Daily Puzzle 🚧
+
+*Not yet implemented.* Planned: Single scenario with unique twist.
+
+### 11.15 Infinite Procedural Scenarios 🚧
+
+*Not yet implemented.* Planned: Template permutations for infinite scenarios.
+
+### 11.16 Learning Agent AI 🚧
+
+*Not yet implemented.* The AI personality system includes 14 presets, but the adaptive learning agent that models player behavior is a stub (commented out).
 
 ---
 
 ## 12. Analytics & Learning Measurement
 
-### 12.1 What We Measure
+### 12.1 Implemented Metrics
 
-| Metric | How | Purpose |
-|--------|-----|---------|
-| Scenario retries | Count of attempts per scenario | Identify which concepts are hard |
-| Decision patterns | Cluster analysis of choices | Measure strategic sophistication |
-| Time per scenario | Duration | Gauge engagement vs confusion |
-| Discovery retention | Post-discovery scenario performance | Verify learning transfer |
-| Transfer test | Framing-shifted scenarios | Test abstract understanding |
-| AI prediction accuracy | Player's ability to predict AI choices | Measure strategic empathy |
-| Sandbox complexity | What players build in sandbox | Measure synthesis ability |
+All metrics below are tracked via `AnalyticsTracker` and persisted to localStorage under the `sovereign_analytics` key:
 
-### 12.2 Validation
+| Metric | Source | How |
+|--------|--------|-----|
+| Scenario completions | `scenario_complete` event | Count of completed scenarios |
+| Decision patterns | `choice` event per decision | Tracked with scenario ID, choice ID, and outcome |
+| Time per scenario | `time` event | Duration between scenario start and completion |
+| Discovery tracking | `discovery` event | Which concepts were discovered and in which scenario |
+| Cooperation rate | Computed from choice events | Ratio of cooperative choices (honor, share, fair, cooperate, ration, negotiate) |
+| Discovery rate | Computed from discovery events | Ratio of concepts discovered to total concepts |
+| Retry counts | Computed from choice events per scenario | Frequency of re-attempts |
+| Outcome distribution | Computed from choice events | Victory / Defeat / Mixed breakdown |
+| Cooperation trend | Rolling window (groups of 5) | How cooperation rate changes over time |
 
-- Pre/post test: Players take a game theory quiz before and after playing
-- Transfer tasks: Players are given real-world strategic scenarios and asked to analyze them
-- Longitudinal: Re-test after 1 month, 6 months to measure retention
-- Comparison: Compare with textbook learners on identical tests
+### 12.2 Not Yet Implemented
+
+- AI prediction accuracy (player's ability to predict AI choices)
+- Transfer tests (framing-shifted scenarios)
+- Pre/post test quiz integration
+- Longitudinal retention measurement
 
 ---
 
-## 13. Implementation Roadmap
+## 13. Implementation Status
 
-### Phase 1: Foundation (Months 1-2)
-- [ ] Core engine (game loop, state, events)
-- [ ] Scenario system (registry, loader, definitions)
-- [ ] AI system (personalities, decision engine)
-- [ ] Simulation (payoff calculation, resolution)
-- [ ] UI framework (routing, components)
-- [ ] Eras I scenarios (1-10)
-- [ ] Save/load system
-- [ ] Basic analytics
+### Phase 1: Foundation ✅ Complete
+- [x] Core engine (game loop, state, events)
+- [x] Scenario system (registry, definitions for all 6 eras)
+- [x] AI system (personalities, decision engine, memory)
+- [x] Simulation (payoff calculation, resolution, resources)
+- [x] UI framework (single-file components.js with screen routing)
+- [x] Eras I scenarios (1-10 + Boss)
+- [x] Save/load system (3 slots + autosave + custom scenarios)
+- [x] Basic analytics (event tracker with localStorage persistence)
 
-### Phase 2: Polish (Months 3-4)
-- [ ] Eras II-III scenarios (11-30)
-- [ ] Discovery card system
-- [ ] Timeline viewer
-- [ ] Replay mode
-- [ ] AI reasoning viewer
-- [ ] Encyclopedia
-- [ ] Art and visual polish
-- [ ] Sound design
-- [ ] Accessibility features
+### Phase 2: Polish ✅ Complete
+- [x] Eras II-III scenarios (11-30 + Bosses)
+- [x] Discovery card system
+- [x] Timeline viewer (with era filtering)
+- [x] Replay mode (step-by-step with slider)
+- [x] Encyclopedia (with locked/unlocked concept cards)
+- [ ] AI reasoning viewer — *Not yet implemented*
+- [x] Art and visual polish (CSS animations, dark theme)
+- [ ] Sound design — *Not yet implemented*
+- [ ] Accessibility features — *Not yet implemented*
 
-### Phase 3: Expansion (Months 5-6)
-- [ ] Eras IV-V scenarios (31-50)
-- [ ] Sandbox mode
-- [ ] Scenario editor
-- [ ] Procedural scenario generation
-- [ ] Challenge mode
-- [ ] Daily puzzle
-- [ ] Community sharing
+### Phase 3: Expansion ✅ Mostly Complete
+- [x] Eras IV-V scenarios (31-50 + Bosses)
+- [x] Sandbox mode (game type, AI personality, rounds, heatmap)
+- [x] Scenario editor (CRUD, test-run, payoff matrix editor)
+- [ ] Procedural scenario generation — *Not yet implemented*
+- [ ] Challenge mode — *Not yet implemented*
+- [ ] Daily puzzle — *Not yet implemented*
+- [ ] Community sharing for editor — *Not yet implemented*
 
-### Phase 4: Mastery (Months 7-8)
-- [ ] Era VI scenarios (51-60+)
-- [ ] Society designer capstone
-- [ ] Leaderboards
-- [ ] Advanced analytics dashboard
-- [ ] Teacher/classroom support
-- [ ] Multiplayer (optional)
-- [ ] Port to mobile
+### Phase 4: Mastery ✅ Mostly Complete
+- [x] Era VI scenarios (51-59 + Boss)
+- [x] Society designer capstone (scenario: The Society)
+- [x] Analytics dashboard (KPIs, charts, CSV export, clear)
+- [ ] Leaderboards — *Not yet implemented*
+- [ ] Teacher/classroom support — *Not yet implemented*
+- [ ] Multiplayer (optional) — *Not yet implemented*
+- [ ] Port to mobile — *Not yet implemented*
 
 ---
 
@@ -704,14 +758,26 @@ Using template permutations, generate infinite scenarios that teach the same con
 
 ## 15. Technical Requirements
 
-- **Platform:** Web (primary), desktop export (secondary), mobile (tertiary)
-- **Framework:** Vanilla JS with modular architecture
-- **Storage:** LocalStorage + IndexedDB for larger histories
-- **Rendering:** DOM-based with CSS animations, Canvas for visualizations
-- **Testing:** Jest/Vitest for unit tests, Playwright for E2E
-- **Build:** Vite for development and production builds
-- **Analytics:** Privacy-focused, self-hosted or optional
+- **Platform:** Web (primary), no build system required
+- **Framework:** Vanilla JS ES modules (type="module"), no framework dependencies
+- **Architecture:** Module-scoped controller (window.App) + reactive game state (GameState class with listener notification)
+- **Rendering:** Direct DOM manipulation via innerHTML in a single components.js file (no virtual DOM, no template engine)
+- **Storage:** LocalStorage only (sovereign_save_auto, sovereign_save_0-2, sovereign_settings, sovereign_analytics, sovereign_custom_scenarios)
+- **CSS:** 3 stylesheets (main.css, components.css, animations.css), CSS custom properties for theming
+- **Dev server:** Python http.server (server.py included)
+- **Testing:** Single test file (tests/test.js)
+- **Browser:** Requires ES module support (modern Chrome, Firefox, Safari, Edge)
 
 ---
 
-*"The game is the message."*
+## Appendix: Changelog
+
+### 2026-07-03 — Analytics clear fix + GDD update
+
+- **Bug fix:** Analytics "Clear Data" button inlined `analytics.clear()` in an onclick handler, but `analytics` is an ES module import (not on window), so the call silently failed. Moved to `App.clearAnalytics()` method where module scope is accessible.
+- **Bug fix:** Analytics dashboard sourced some KPIs (scenarios played, discovery rate, concepts list) from `gameState` rather than analytics events, so clearing analytics didn't reset those displays. Changed to derive all dashboard data from analytics events only.
+- **Feature:** `App.clearAnalytics()` now also resets game state and removes autosave from localStorage, producing a completely fresh game state.
+- **Boss fights:** 6 boss fight scenarios added across all eras (The King's Decree, Too Big to Fail, Operation Deception, The Silk Road Summit, The Cuban Quarantine, The Paris Accord).
+- **Replay mode:** Fixed broken rendering and per-round scores always showing zero.
+- **Concept detail overlay:** Added clickable concept detail overlay from encyclopedia.
+- **Analytics dashboard & timeline:** Enhanced with cooperation trend chart, era breakdown, retry rates, and resource history visualization.
