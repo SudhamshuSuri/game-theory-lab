@@ -858,10 +858,10 @@ function renderAnalyticsDashboard() {
   const discoveries = events.filter(e => e.type === 'discovery');
   const times = events.filter(e => e.type === 'time');
 
-  const totalPlayed = s.player.completedScenarios.length;
+  const totalPlayed = completions.length;
   const coopRate = analytics.getCooperationRate();
   const totalConcepts = Object.keys(CONCEPTS).length;
-  const discRate = totalConcepts > 0 ? s.player.discoveries.length / totalConcepts : 0;
+  const discRate = totalConcepts > 0 ? discoveries.length / totalConcepts : 0;
   const avgTime = analytics.getAverageTimePerScenario();
 
   // Choice distribution
@@ -912,9 +912,9 @@ function renderAnalyticsDashboard() {
     trendGroups.push({ label: `#${i + 1}`, rate: coopCount / group.length });
   }
 
-  // Discovered concepts
-  const discoveredIds = s.player.discoveries || [];
-  const discoveredConcepts = discoveredIds.map(id => CONCEPTS[id]).filter(Boolean);
+  // Discovered concepts (from tracked analytics events)
+  const discoveredConceptIds = [...new Set(discoveries.map(e => e.data.conceptId).filter(Boolean))];
+  const discoveredConcepts = discoveredConceptIds.map(id => CONCEPTS[id]).filter(Boolean);
 
   // Resource history
   const resHist = gameState.get().resourcesHistory || [];
@@ -1116,7 +1116,7 @@ function renderAnalyticsDashboard() {
 
       <div style="margin-top: 16px; text-align: center;">
         <button class="btn btn-primary" onclick="App.exportAnalyticsCSV()">\u{1F4E5} Export CSV</button>
-        <button class="btn btn-danger" onclick="if(confirm('Clear all analytics data?')) { analytics.clear(); App.showAnalytics(); }" style="margin-left: 8px;">\u{1F5D1} Clear Data</button>
+        <button class="btn btn-danger" onclick="if(confirm('Clear all analytics data?')) { App.clearAnalytics(); }" style="margin-left: 8px;">\u{1F5D1} Clear Data</button>
       </div>
     </div>
   `;

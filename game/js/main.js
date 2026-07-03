@@ -163,6 +163,13 @@ window.App = {
     render('analytics');
   },
 
+  clearAnalytics() {
+    analytics.clear();
+    gameState.reset();
+    try { localStorage.removeItem('sovereign_save_auto'); } catch (e) {}
+    this.showTitle();
+  },
+
   playScenario(scenarioId) {
     const pending = gameState.get().world.pendingDiscovery;
     if (pending) {
