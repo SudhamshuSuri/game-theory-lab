@@ -614,3 +614,44 @@ scenarioRegistry.register({
     ariana: { personality: 'longTermPlanner', name: 'Chancellor Ariana' },
   },
 });
+
+scenarioRegistry.register({
+  id: 'boss-facebook-network',
+  title: 'The Facebook Network Effect',
+  era: 5,
+  order: 50.5,
+  bossFight: true,
+  concept: 'networkEffects',
+  type: 'coordination',
+  story: [
+    { speaker: 'Zuckerberg', text: 'We have 1 million users — all college students. MySpace has 20 million — everyone. They\'re growing faster because they let anyone join.' },
+    { speaker: 'Your Advisor', text: 'MySpace is the dominant player. They have the network effect advantage. Every user they add makes their network more valuable and ours less.' },
+    { speaker: 'Zuckerberg', text: 'But our network is higher quality. Real identities. Real connections. MySpace is full of spam bots and fake profiles. If we open to everyone, we lose that quality. If we stay exclusive, we might never reach critical mass.' },
+    { speaker: 'Thiel', text: 'The question is not which product is better. The question is which network reaches critical mass first. In network markets, the winner is the one who gets to the tipping point. Everything else is secondary.' },
+  ],
+  context: '2004-2006. Facebook is a college-only social network. MySpace is the dominant player with 10x the users. The network effect says: the bigger network wins. But Facebook has something MySpace doesn\'t: real identities, high engagement, a quality experience. You are Mark Zuckerberg. The choice is: open the network to everyone (risk losing quality, but race for critical mass), keep it exclusive (higher quality, but risk being a niche product), or sell to Yahoo ($1B offer on the table). This is the network effects dilemma: quality vs. scale.',
+  choices: [
+    { id: 'open_gradual', label: 'Open Gradually (School by School)', description: 'Open registration one campus at a time. Maintain quality while growing. Creates an "exclusive" feel even while expanding.', risk: 'medium', tags: ['cooperate', 'medium'] },
+    { id: 'open_all', label: 'Open to Everyone', description: 'Drop the college requirement entirely. Maximum growth rate — but risk of spam, bots, and quality degradation.', risk: 'high', tags: ['defect', 'high'] },
+    { id: 'stay_exclusive', label: 'Stay College-Only', description: 'Remain exclusive to .edu emails. High quality, strong engagement — but limited total addressable market.', risk: 'low', tags: ['low', 'safe'] },
+  ],
+  idealNote: 'The optimal strategy was opening gradually — precisely what Facebook did. By opening one school at a time, Zuckerberg created artificial scarcity (every new user wanted to join because they heard about it from friends who already had access). This is "networked growth with controlled saturation": each new cohort found the network already valuable because their friends were already there. MySpace grew fast but without strategy — it became a spam-filled wasteland because anyone could join at any time. Facebook\'s gradual rollout maintained the quality of the network while adding users at a sustainable rate. The key insight: network effects are not just about SIZE but about DENSITY — a smaller but more connected network is more valuable than a larger but fragmented one.',
+  analyze: (choice, aiChoice) => {
+    if (choice === 'open_gradual') return 'You opened one school at a time, maintaining the exclusive feel while expanding. By 2006, Facebook had 12 million users — still behind MySpace (80 million), but growing faster. The key metric: engagement. Facebook users logged in daily; MySpace users checked weekly. When Facebook opened to everyone in September 2006, the growth exploded — and within two years, Facebook surpassed MySpace. Why? Because the gradual rollout had built network DENSITY, not just network SIZE. Every new user joined a network where their real friends were already active. MySpace had more users, but Facebook had more CONNECTIONS per user. In network effects, density beats size every time.';
+    if (choice === 'open_all') return 'You opened to everyone immediately. Growth explodes — 50 million users in a year. But the quality collapses. Spam bots, fake profiles, and marketers flood the platform. Your college users, who joined because it was a "clean" alternative to MySpace, start leaving. You gained the masses but lost the core. The network grew in SIZE but shrank in DENSITY — and it turned out density is what mattered. MySpace made the same mistake: by letting anyone join, they let spammers destroy the user experience. The lesson: network effects are not automatic. A larger network is only more valuable if the connections between users remain meaningful. Uncontrolled growth can destroy network value.';
+    return 'You stayed college-only. The platform is pristine — high engagement, real identities, no spam. But MySpace grows to 100 million users while you\'re at 5 million. Yahoo\'s $1B offer starts to look like the best option. By 2007, you sell for $1.5B — not bad for a college project. But you missed the opportunity to dominate social media for a decade. The lesson: in network markets, the risk of staying small is that you become irrelevant. Exclusive networks survive as niche products, but they rarely become platforms. Sometimes you have to accept some quality degradation to reach critical mass. The challenge is finding the right balance between growth and quality.';
+  },
+  customResolve: (playerChoice, aiChoices) => {
+    const aiChoice = Object.values(aiChoices)[0];
+    if (playerChoice === 'open_gradual') {
+      return { outcome: 'victory', score: 9, narrative: 'Your gradual rollout created network density. MySpace\'s uncontrolled growth became its undoing. By 2008, Facebook dominated.', resourceChanges: { influence: 50, gold: 100 }, relationshipChanges: {} };
+    }
+    if (playerChoice === 'open_all') {
+      return { outcome: 'mixed', score: 4, narrative: 'Rapid growth attracted everyone — including spammers. The network grew but quality suffered. You won the numbers game but lost the engagement war.', resourceChanges: { gold: 50, influence: -10 }, relationshipChanges: {} };
+    }
+    return { outcome: 'defeat', score: 2, narrative: 'You stayed exclusive and missed the network effect tipping point. MySpace dominated social media — until Facebook finally opened up and overtook them.', resourceChanges: { gold: -50 }, relationshipChanges: {} };
+  },
+  agents: {
+    myspace: { personality: 'greedy', name: 'MySpace' },
+  },
+});

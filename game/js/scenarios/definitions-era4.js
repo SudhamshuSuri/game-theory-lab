@@ -242,6 +242,22 @@ scenarioRegistry.register({
 
     return `Neither contributed. No fair. Both get 0. This is the tragedy of the public goods game: individually rational choices (each chooses to free ride) produce a collectively worse outcome (no fair for anyone). The fair would have generated 80 gold of total value for a 50 gold investment — a clear social good. But without a mechanism to enforce contributions, the public good goes unprovided. This is why governments use taxes to fund roads, schools, and defense — purely voluntary systems of public goods provision tend to under-provide. The core lesson: when benefits are non-excludable, markets alone can't efficiently provide public goods.`;
   },
+  customResolve: (playerChoice, aiChoices) => {
+    const pContrib = playerChoice === 'contribute';
+    const aContrib = Object.values(aiChoices).some(c => c === 'contribute');
+    const totalPool = (pContrib ? 1 : 0) + Object.values(aiChoices).filter(c => c === 'contribute').length;
+    const returnPerPerson = totalPool * 0.6;
+    if (pContrib && aContrib) {
+      return { outcome: 'victory', score: 7, narrative: `Both contributed. The fair is a triumph! Total value: 80 gold from 20 gold of contributions — a 300% social return.`, resourceChanges: { gold: 24, influence: 20 }, relationshipChanges: {} };
+    }
+    if (pContrib && !aContrib) {
+      return { outcome: 'mixed', score: 3, narrative: `You contributed but Merchant Thalia free rode. The fair happens, but you paid while they benefited for free.`, resourceChanges: { gold: -4 }, relationshipChanges: {} };
+    }
+    if (!pContrib && aContrib) {
+      return { outcome: 'mixed', score: 4, narrative: `You free rode while Thalia contributed. You got the benefit without paying. Maximum personal gain, but if everyone did this, no fair would happen.`, resourceChanges: { gold: 24 }, relationshipChanges: {} };
+    }
+    return { outcome: 'defeat', score: 0, narrative: `Neither contributed. No fair. The public good goes unprovided — individually rational choices led to collective failure.`, resourceChanges: {}, relationshipChanges: {} };
+  },
   agents: {
     thalia: { personality: 'trustBuilder', name: 'Merchant Thalia' },
   },
@@ -590,5 +606,47 @@ scenarioRegistry.register({
   },
   agents: {
     miriam: { personality: 'trustBuilder', name: 'Scholar Miriam' },
+  },
+});
+
+scenarioRegistry.register({
+  id: 'boss-fcc-spectrum',
+  title: 'The FCC Spectrum Auctions',
+  era: 4,
+  order: 40.5,
+  bossFight: true,
+  concept: 'auctions',
+  type: 'auction',
+  story: [
+    { speaker: 'FCC Chair', text: 'Gentlemen, we are about to auction off the electromagnetic spectrum for cellular telephone service. This is public property — we must get the best value for taxpayers.' },
+    { speaker: 'Economist', text: 'Historically, spectrum was given away by lottery or "beauty contest." Both were disasters. Lotteries left billions on the table. Beauty contests were corrupt.' },
+    { speaker: 'AT&T Rep', text: 'We recommend a simple sealed-bid auction. Highest bid wins. Standard practice.' },
+    { speaker: 'Economist', text: 'A first-price sealed-bid auction creates the winner\'s curse — the winner systematically overpays. We recommend a simultaneous multiple-round auction. It\'s never been tried before, but game theory says it works.' },
+  ],
+  context: '1994. The US government is about to auction the radio spectrum for cellular phone service — the first major spectrum auction in history. The economists advising the FCC recommend a radical new format: a "simultaneous multiple-round ascending auction" where all licenses are sold at once and prices rise in rounds. AT&T wants a simple sealed-bid auction. The choice of auction format will determine whether taxpayers get fair value or leave billions on the table. This is mechanism design in action: the rules of the game determine the outcome.',
+  choices: [
+    { id: 'ascending', label: 'Simultaneous Ascending Auction', description: 'All licenses sold in parallel. Prices rise round by round. Bidders can switch licenses. The game theory recommendation.', risk: 'medium', tags: ['cooperate', 'medium'] },
+    { id: 'sealed_bid', label: 'First-Price Sealed-Bid', description: 'Each bidder submits one secret bid. Highest wins. Simple and familiar — but creates winner\'s curse.', risk: 'high', tags: ['defect', 'high'] },
+    { id: 'lottery', label: 'Lottery / Beauty Contest', description: 'Old system. Random allocation or political favoritism. Everyone hates it, but it\'s what we\'ve always done.', risk: 'low', tags: ['low', 'safe'] },
+  ],
+  idealNote: 'The simultaneous multiple-round ascending auction was the optimal choice — and it worked brilliantly. Designed by game theorists Paul Milgrom and Robert Wilson (who later won the Nobel Prize for this work), the format allowed bidders to switch between licenses as prices changed, revealing their true valuations through the bidding process. The 1994 auction raised $617M — far more than the $100M the government expected. The key insight: in the ascending format, bidders learn from each other\'s bids, reducing the winner\'s curse. This is mechanism design: changing the rules of the game changes the outcome. Real-world impact: over 100 countries have used this format, raising hundreds of billions of dollars.',
+  analyze: (choice, aiChoice) => {
+    if (choice === 'ascending') return 'You chose the simultaneous multiple-round ascending auction. The economists were right: the format was a triumph. Bidders revealed their valuations through the bidding process, winners paid competitive but not ruinous prices, and the government raised $617M — six times expectations. The auction became the model for over 100 countries. This is mechanism design at its finest: by changing the rules (multiple rounds, simultaneous licenses, price visibility), you changed the entire strategic dynamic. The lesson: when you design a game, you can design the outcome. That\'s the power of mechanism design.';
+    if (choice === 'sealed_bid') return 'You chose the first-price sealed-bid auction. AT&T wins the biggest licenses — but at a price so high they spend years regretting it. Smaller bidders, afraid of the winner\'s curse, bid conservatively. Total revenue: $312M — half of what the ascending auction would have raised. The winner\'s curse strikes: the winning bidder overpaid because they had to guess the value without seeing other bids. This is the fundamental problem with sealed-bid common-value auctions: the winner is the most optimistic bidder, and the most optimistic is almost always wrong. The lesson: when bidders can\'t learn from each other, they guess — and the guesser who wins is the one who guessed highest.';
+    return 'You chose the old lottery system. The spectrum is awarded randomly. Some winners get licenses worth millions for the price of a lottery ticket. The government collects $50M. Taxpayers lost billions. But worse: the lottery winners often had no experience running a phone network — they flipped the licenses to AT&T for a profit, adding no value to the economy. The beauty contest version (awarding licenses to "the most qualified") was even worse: it was a breeding ground for corruption and lobbying. The lesson: when you allocate valuable public resources through random chance or political favoritism, you leave enormous value on the table. Good mechanism design captures that value.';
+  },
+  customResolve: (playerChoice, aiChoices) => {
+    const aiChoice = Object.values(aiChoices)[0];
+    if (playerChoice === 'ascending') {
+      const aiRevenue = aiChoice === 'ascending' ? 617 : 510;
+      return { outcome: 'victory', score: 9, narrative: `The ascending auction raised $${aiRevenue}M. Game theory prevailed — the format became the global standard for spectrum allocation.`, resourceChanges: { gold: 200, influence: 40 }, relationshipChanges: {} };
+    }
+    if (playerChoice === 'sealed_bid') {
+      return { outcome: 'mixed', score: 4, narrative: 'The sealed-bid auction raised $312M — better than a lottery, but billions left on the table. The winner\'s curse punished the aggressive bidder.', resourceChanges: { gold: 50 }, relationshipChanges: {} };
+    }
+    return { outcome: 'defeat', score: 2, narrative: 'The lottery left taxpayers with $50M while spectrum speculators profited. Mechanism design matters — bad rules produce bad outcomes.', resourceChanges: { gold: -50, influence: -20 }, relationshipChanges: {} };
+  },
+  agents: {
+    telco: { personality: 'greedy', name: 'AT&T' },
   },
 });

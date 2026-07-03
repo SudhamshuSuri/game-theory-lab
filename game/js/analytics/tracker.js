@@ -2,6 +2,7 @@ class AnalyticsTracker {
   constructor() {
     this._events = [];
     this._enabled = true;
+    this._load();
   }
 
   track(eventType, data = {}) {

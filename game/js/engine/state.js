@@ -121,6 +121,11 @@ export class GameState {
     this._notify();
   }
 
+  incrementTurn() {
+    this.state.world.turn++;
+    this._notify();
+  }
+
   undo() {
     if (this._undoStack.length === 0) return false;
     this.state = this._undoStack.pop();

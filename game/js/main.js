@@ -24,6 +24,7 @@ let _currentScenario = null;
 let _currentInstances = null;
 let _scenarioStartTime = 0;
 let _pendingDiscovery = null;
+let _pendingScenario = null;
 
 function getChoiceTags(choiceId) {
   const tags = [];
@@ -58,7 +59,11 @@ window.App = {
       analytics.trackScenarioComplete(data.scenarioId, 1, 'completed');
     });
 
-    this.showTitle();
+    if (saveManager.hasAutoSave()) {
+      this.continueSave();
+    } else {
+      this.showTitle();
+    }
   },
 
   startNewGame() {
@@ -98,11 +103,15 @@ window.App = {
     _currentScenario = null;
     _currentInstances = null;
     _pendingDiscovery = null;
+    _pendingScenario = null;
     gameState.update('world.pendingDiscovery', null);
     render('title');
   },
 
   showMenu() {
+    _pendingDiscovery = null;
+    _pendingScenario = null;
+    gameState.update('world.pendingDiscovery', null);
     render('menu');
   },
 
@@ -131,7 +140,23 @@ window.App = {
   },
 
   showReplay(data) {
+    this._lastReplayData = data;
     render('replay', { replayData: data });
+  },
+
+  replayBack() {
+    const d = this._lastReplayData;
+    if (!d) { this.showMenu(); return; }
+    const lastEntry = d.history && d.history.length > 0 ? d.history[d.history.length - 1] : null;
+    render('results', {
+      scenario: d.scenario,
+      result: d.result,
+      playerChoice: lastEntry ? lastEntry.playerChoice : '',
+      aiChoices: d.aiChoices || {},
+      isMultiRound: d.scenario.multiRound || false,
+      multiRoundComplete: true,
+      history: d.history || null,
+    });
   },
 
   showAnalytics() {
@@ -139,6 +164,15 @@ window.App = {
   },
 
   playScenario(scenarioId) {
+    const pending = gameState.get().world.pendingDiscovery;
+    if (pending) {
+      _pendingScenario = scenarioId;
+      gameState.update('world.pendingDiscovery', null);
+      _pendingDiscovery = null;
+      render('discovery', { conceptId: pending });
+      return;
+    }
+
     _scenarioStartTime = Date.now();
     const def = scenarioRegistry.get(scenarioId);
     if (!def) {
@@ -251,6 +285,7 @@ window.App = {
   _completeScenario(def, choiceId, aiChoices, result, history = null, isMultiRound = false) {
     const timeSpent = Date.now() - _scenarioStartTime;
     analytics.trackTime(def.id, timeSpent);
+    analytics.trackScenarioComplete(def.id, 1, result.outcome || 'mixed');
 
     const concept = def.concept ? CONCEPTS[def.concept] : null;
     const alreadyDiscovered = concept && gameState.get().player.discoveries.includes(concept.id);
@@ -258,6 +293,7 @@ window.App = {
     gameState.completeScenario(def.id);
     if (concept && !alreadyDiscovered) {
       gameState.addDiscovery(concept.id);
+      analytics.trackDiscovery(concept.id, def.id);
       _pendingDiscovery = concept.id;
       gameState.update('world.pendingDiscovery', concept.id);
     } else {
@@ -268,6 +304,15 @@ window.App = {
     saveManager.autoSave();
     saveManager.trackResourcesHistory();
     saveManager.saveWaypoint(def.id, result.score || 0, result.outcome || 'mixed');
+
+    gameState.addToHistory({
+      scenario: def.id,
+      playerChoice: choiceId,
+      aiChoices,
+      outcome: result.outcome,
+      resourceChanges: result.resourceChanges || {},
+    });
+    gameState.incrementTurn();
 
     render('results', {
       scenario: def, result, playerChoice: choiceId, aiChoices,
@@ -282,12 +327,8 @@ window.App = {
   },
 
   continueAfterResult(scenarioId) {
-    if (_pendingDiscovery) {
-      const conceptId = _pendingDiscovery;
-      _pendingDiscovery = null;
-      render('discovery', { conceptId });
-      return;
-    }
+    _pendingDiscovery = null;
+    gameState.update('world.pendingDiscovery', null);
     const next = scenarioRegistry.getNextScenario(scenarioId);
     if (next) {
       this.playScenario(next.id);
@@ -299,6 +340,12 @@ window.App = {
   afterDiscovery() {
     _pendingDiscovery = null;
     gameState.update('world.pendingDiscovery', null);
+    if (_pendingScenario) {
+      const sid = _pendingScenario;
+      _pendingScenario = null;
+      this.playScenario(sid);
+      return;
+    }
     const next = _currentScenario ? scenarioRegistry.getNextScenario(_currentScenario.id) : null;
     if (next) {
       this.playScenario(next.id);

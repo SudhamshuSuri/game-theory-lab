@@ -84,6 +84,15 @@ scenarioRegistry.register({
     };
     return insights[choice] || 'Contract design is about aligning incentives while sharing risk. The Principal-Agent Problem teaches that the structure of payment determines the quality of effort.';
   },
+  customResolve: (playerChoice) => {
+    if (playerChoice === 'mixed') {
+      return { outcome: 'victory', score: 7, narrative: 'Mixed payment balances incentive and risk. Rourke fights fiercely — part upfront covers his costs, part performance keeps him motivated. The optimal contract.', resourceChanges: { gold: -100, military: 80 }, relationshipChanges: {} };
+    }
+    if (playerChoice === 'performance') {
+      return { outcome: 'mixed', score: 4, narrative: 'Pure performance pay aligns incentives but shifts all risk onto Rourke. He fights well, but demands higher pay next time to compensate for the risk.', resourceChanges: { gold: -150, military: 60 }, relationshipChanges: {} };
+    }
+    return { outcome: 'defeat', score: 2, narrative: 'Full upfront payment. Rourke has his gold and no incentive to fight hard. His mercenaries do the minimum and retreat at the first sign of trouble.', resourceChanges: { gold: -200, military: -30 }, relationshipChanges: {} };
+  },
   agents: {
     rourke: { personality: 'greedy', name: 'Captain Rourke' },
   },
@@ -213,6 +222,18 @@ scenarioRegistry.register({
     };
     return insights[choice] || 'Adverse selection means the pool of applicants is worse than the general population. The solution is screening: design a test that separates types by making it harder for low-quality candidates to pass.';
   },
+  customResolve: (playerChoice) => {
+    if (playerChoice === 'trial_period') {
+      return { outcome: 'victory', score: 8, narrative: 'The trial period reveals true quality through actual work. The competent surveyor produces accurate maps. The gold standard of screening.', resourceChanges: { gold: -80, influence: 30, knowledge: 20 }, relationshipChanges: {} };
+    }
+    if (playerChoice === 'written_test') {
+      return { outcome: 'mixed', score: 4, narrative: 'The test screens for book knowledge but misses practical skill. Your top scorer can recite geometry but can\'t sight a level. Single-dimensional screening has limits.', resourceChanges: { gold: -100, knowledge: 10 }, relationshipChanges: {} };
+    }
+    if (playerChoice === 'reference_check') {
+      return { outcome: 'mixed', score: 3, narrative: 'Past employers gave glowing references — even for mediocre workers. You avoided the truly bad candidates but couldn\'t distinguish good from average.', resourceChanges: { gold: -120 }, relationshipChanges: {} };
+    }
+    return { outcome: 'defeat', score: 1, narrative: 'Every candidate swore the oath. Every single one. It revealed nothing because it cost them nothing. Cheap talk conveys no information.', resourceChanges: { gold: -150, influence: -10 }, relationshipChanges: {} };
+  },
   agents: {
     valerius: { personality: 'deceptive', name: 'Claimant Valerius' },
   },
@@ -251,6 +272,18 @@ scenarioRegistry.register({
     };
     return insights[choice] || 'Credible commitment is about making your promise believable by putting something valuable at risk. The more you risk, the more credible your promise.';
   },
+  customResolve: (playerChoice) => {
+    if (playerChoice === 'propose_hostage') {
+      return { outcome: 'victory', score: 8, narrative: 'The mutual hostage exchange ensures both sides are credibly committed. Neither can betray without sacrificing a family member. The strongest bond in game theory is symmetric, mutual skin in the game.', resourceChanges: { gold: 200, influence: 40 }, relationshipChanges: {} };
+    }
+    if (playerChoice === 'accept_dowry') {
+      return { outcome: 'mixed', score: 5, narrative: 'The marriage proceeds with Elara\'s dowry. She is bound, but you have no equivalent stake. Asymmetric commitment works — but the strongest bonds are mutual.', resourceChanges: { gold: 100, influence: 20 }, relationshipChanges: {} };
+    }
+    if (playerChoice === 'refuse_marriage') {
+      return { outcome: 'defeat', score: 1, narrative: 'The alliance is lost. Duchess Elara is offended. Refusing avoids commitment but forfeits the benefits of cooperation entirely.', resourceChanges: { gold: -50, influence: -20 }, relationshipChanges: {} };
+    }
+    return { outcome: 'defeat', score: 2, narrative: 'The marriage proceeds on promise alone — no gold, no hostages. Cheap talk binds no one. The alliance rests on goodwill, which is fragile when interests diverge.', resourceChanges: {}, relationshipChanges: {} };
+  },
   agents: {
     elara: { personality: 'longTermPlanner', name: 'Duchess Elara' },
   },
@@ -287,6 +320,18 @@ scenarioRegistry.register({
       hold_out: 'You refused to surrender. The siege continues. Two months later, with no reinforcements, your garrison surrenders on worse terms — unconditional surrender. Refusing was your safest option given the lack of credible enemy commitment, but it was also the costliest in the long run. This illustrates a tragic dynamic: when commitments aren\'t credible, mutually beneficial agreements fail. Both sides would prefer a peaceful surrender with safe passage, but without credible commitment, the only equilibrium is continued conflict until one side is destroyed.',
     };
     return insights[choice] || 'Credible commitment is the art of making promises believable. The key insight: a promise is only as credible as the cost of breaking it.';
+  },
+  customResolve: (playerChoice) => {
+    if (playerChoice === 'demand_hostage') {
+      return { outcome: 'victory', score: 7, narrative: 'The enemy general\'s son arrives as a hostage. You open the gates. The enemy honours the truce — their promise now has teeth. Credible commitment saved your fortress.', resourceChanges: { gold: 100, influence: 30 }, relationshipChanges: {} };
+    }
+    if (playerChoice === 'hold_out') {
+      return { outcome: 'mixed', score: 3, narrative: 'You held out, but no reinforcements came. The garrison surrenders on worse terms. Refusing was safe given the lack of credible commitment — but it was also the costliest path.', resourceChanges: { military: -100, gold: -50 }, relationshipChanges: {} };
+    }
+    if (playerChoice === 'sign_treaty') {
+      return { outcome: 'defeat', score: 1, narrative: 'The treaty is signed. You open the gates. The enemy attacks anyway — paper doesn\'t stop swords. A written agreement without enforcement changes nothing about incentives.', resourceChanges: { gold: -100, military: -200, influence: -30 }, relationshipChanges: {} };
+    }
+    return { outcome: 'defeat', score: 0, narrative: 'You trusted their word. They attacked as soon as the gates opened. A promise that costs nothing to make and nothing to break is cheap talk.', resourceChanges: { gold: -150, military: -200, influence: -20 }, relationshipChanges: {} };
   },
   agents: {
     vance: { personality: 'trustBuilder', name: 'Lord Commander Vance' },
@@ -325,6 +370,18 @@ scenarioRegistry.register({
       no_contract: 'You trained Tycho on a handshake and trust. A competitor offered him 50% more the day after his training ended. He left. Your investment is lost. This is the tragedy of relying on goodwill in a competitive market. In game theory, gratitude is a weak force against a large payoff difference. The competitor offers +5; your relationship is worth maybe +1. Rational actors (especially opportunists) go where the payoff is higher. Real-world lesson: never rely on loyalty alone to solve structural incentive problems. Contracts, bonds, and aligned incentives are more reliable than trust.',
     };
     return insights[choice] || 'The principal-agent problem and moral hazard combine here: the apprentice\'s effort during training is unobservable, and their post-training loyalty is unenforceable without costly mechanisms. The best solutions align incentives rather than try to enforce compliance.';
+  },
+  customResolve: (playerChoice) => {
+    if (playerChoice === 'profit_share') {
+      return { outcome: 'victory', score: 8, narrative: 'Profit-sharing aligns Tycho\'s incentives with yours. He works harder, stays longer, and contributes ideas. The ideal solution: make the agent a partial principal.', resourceChanges: { gold: 80, influence: 30 }, relationshipChanges: {} };
+    }
+    if (playerChoice === 'loyalty_bonus') {
+      return { outcome: 'mixed', score: 5, narrative: 'The golden handcuffs keep Tycho for 5 years. He stays — but the bonus solves retention, not effort. He does his job without innovation.', resourceChanges: { gold: 50 }, relationshipChanges: {} };
+    }
+    if (playerChoice === 'long_contract') {
+      return { outcome: 'mixed', score: 4, narrative: 'The 10-year contract binds Tycho legally but breeds resentment. He does the minimum and leaves the day it expires. Compliance is not commitment.', resourceChanges: { gold: 30 }, relationshipChanges: {} };
+    }
+    return { outcome: 'defeat', score: 1, narrative: 'You trained Tycho on a handshake. A competitor offered 50% more the day his training ended. He left. Gratitude is weak against a better salary.', resourceChanges: { gold: -100 }, relationshipChanges: {} };
   },
   agents: {
     tycho: { personality: 'opportunist', name: 'Young Tycho' },
@@ -463,5 +520,44 @@ scenarioRegistry.register({
     };
   },
   agents: {},
+});
+
+scenarioRegistry.register({
+  id: 'boss-too-big-to-fail',
+  title: 'Too Big to Fail',
+  era: 2,
+  order: 20.5,
+  bossFight: true,
+  concept: 'moralHazard',
+  type: 'debt',
+  story: [
+    { speaker: 'Treasury Secretary', text: 'Mr. President, Bear Stearns is collapsing. They\'re leveraged 35-to-1. If they fail, the entire financial system could freeze.' },
+    { speaker: 'Fed Chairman', text: 'We have two options. Rescue them — create moral hazard. Or let them fail — risk a systemic meltdown.' },
+    { speaker: 'Your Advisor', text: 'This is the problem of moral hazard in action. Bear Stearns took insane risks because they assumed we\'d bail them out. If we do, every other bank will do the same. If we don\'t, the economy collapses.' },
+  ],
+  context: 'March 2008. Bear Stearns — a 85-year-old investment bank — is hours from bankruptcy. You are the Treasury Secretary. The bank took massive risks in the subprime mortgage market because they believed they were "too big to fail." If you bail them out, you confirm that belief. If you let them fail, you risk a chain reaction that could collapse the global economy. This is moral hazard: when protection from consequences encourages risk-taking. The boss challenge: do you reward the gamble or risk the system?',
+  choices: [
+    { id: 'bailout', label: 'Federal Bailout', description: 'Inject $30B via JPMorgan to rescue Bear Stearns. Stabilizes markets now, but confirms that big banks won\'t be held accountable.', risk: 'low', tags: ['cooperate', 'safe'] },
+    { id: 'let_fail', label: 'Let It Fail', description: 'Refuse intervention. Bear Stearns collapses — markets panic, but the moral hazard precedent is contained.', risk: 'high', tags: ['defect', 'high'] },
+    { id: 'nationalize', label: 'Temporary Takeover', description: 'Government takes control, restructures the bank, sells it piece by piece. Prevents collapse without rewarding shareholders.', risk: 'medium', tags: ['medium'] },
+  ],
+  idealNote: 'The optimal response is temporary nationalization — the "third way" that severs the link between "the institution fails" and "the system collapses." In reality, Paulson brokered a deal where JPMorgan bought Bear Stearns for $2/share (from $172 the year before). Shareholders were wiped out — that WAS the punishment. A simple bailout with no conditions rewards the bank\'s risk-taking and entrenches moral hazard. The key insight: the best solutions punish bad behavior while preventing catastrophe. This is why the 2010 Dodd-Frank reforms required banks to hold more capital and submit to stress tests.',
+  analyze: (choice, aiChoice) => {
+    if (choice === 'bailout') return 'You bailed out Bear Stearns. The market stabilizes — but the message is clear: take risks, and the government will save you. In real history, Paulson did this. By September, Lehman Brothers (even more leveraged) expected the same treatment. When Paulson let Lehman fail, it triggered the worst financial crisis since 1929. Why? Because the bailout proved the government WOULD rescue big banks — so when they didn\'t rescue Lehman, no one was prepared. Moral hazard isn\'t just about the bank that got bailed out — it\'s about every other bank that now assumes they\'ll be next. The lesson: rescues create expectations. Every bailout plants the seeds of the next crisis.';
+    if (choice === 'let_fail') return 'You let Bear Stearns fail. The moral hazard precedent is clear: no bank is too big to fail. But the contagion is immediate — the Dow drops 500 points, credit markets freeze, and other banks start collapsing like dominoes. In real history, this is what happened when Lehman failed four months later. The lesson: in a crisis, the cost of "teaching a lesson" can exceed the cost of the rescue itself. Sometimes, accepting moral hazard is cheaper than systemic collapse. The challenge of moral hazard regulation: you must create consequences for risk-taking WITHOUT making the system fragile.';
+    return 'You chose temporary nationalization. The government takes over, fires the executives, restructures the bad assets, and re-privatizes the healthy parts. The bank\'s shareholders are wiped out. Employees lose bonuses. But depositors and counterparties are protected. This is the third way: punish the actors while protecting the system. In real history, the US didn\'t use this approach for investment banks (though it did for AIG and the auto industry). Sweden used it successfully during its 1990s banking crisis. The lesson: the best mechanism design for moral hazard severs the link between "the institution fails" and "the system collapses."';
+  },
+  customResolve: (playerChoice, aiChoices) => {
+    if (playerChoice === 'nationalize') {
+      return { outcome: 'victory', score: 8, narrative: 'Temporary nationalization works. The government restructures the bank, shareholders are wiped out, but the system survives. The optimal mechanism design: punish bad behavior while preventing catastrophe.', resourceChanges: { gold: 30, influence: 50 }, relationshipChanges: {} };
+    }
+    if (playerChoice === 'bailout') {
+      return { outcome: 'mixed', score: 4, narrative: 'The bailout stabilizes markets, but moral hazard is entrenched. Every bailout plants the seeds of the next crisis because banks now know they\'ll be rescued.', resourceChanges: { gold: -50, influence: 20 }, relationshipChanges: {} };
+    }
+    return { outcome: 'defeat', score: 1, narrative: 'Letting Bear Stearns fail triggers immediate contagion. Credit markets freeze, other banks collapse. The cost of teaching a lesson exceeded the cost of the rescue.', resourceChanges: { gold: -150, influence: -30 }, relationshipChanges: {} };
+  },
+  agents: {
+    market: { personality: 'riskSeeking', name: 'The Market' },
+  },
 });
 

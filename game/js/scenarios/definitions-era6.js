@@ -749,3 +749,79 @@ scenarioRegistry.register({
     chronicler: { personality: 'trustBuilder', name: 'The Chronicler' },
   },
 });
+
+scenarioRegistry.register({
+  id: 'boss-standards-war',
+  title: 'The Standards War Gauntlet',
+  era: 6,
+  order: 60.5,
+  bossFight: true,
+  concept: 'coordination',
+  multiRound: true,
+  totalRounds: 3,
+  story: [
+    { speaker: 'Chronicler', text: 'You have mastered the principles. Now face the ultimate test: three standards wars that shaped the modern world. Each round presents a different battle. The strategic choice is the same in all three.' },
+    { speaker: 'Chronicler', text: 'Round 1: VHS vs Betamax (1975). Sony\'s Betamax had superior picture quality. JVC\'s VHS had longer recording time. Which matters more in a standards war?' },
+    { speaker: 'Chronicler', text: 'Round 2: TCP/IP vs OSI (1980s). The OSI model was a perfectly designed 7-layer protocol. TCP/IP was a rough, practical implementation. Which wins in the marketplace?' },
+    { speaker: 'Chronicler', text: 'Round 3: Chrome vs Internet Explorer (2008). Microsoft bundled IE with Windows — the ultimate distribution advantage. Google had the world\'s most popular website. Who wins the browser war?' },
+    { speaker: 'Chronicler', text: 'Three battles. One meta-lesson. Choose wisely.' },
+  ],
+  context: 'Three standards wars spanning 30 years. Each time, a technically superior standard faced a competitor with better adoption strategy. Each time, the "inferior" technology won. Your opponent — The Market — chooses based on the same strategic logic each round. The question is: have you learned what determines the winner in a network market?',
+  choices: [
+    { id: 'quality', label: 'Win on Quality', description: 'Build the technically superior product. Trust that users will recognize and reward quality.', risk: 'high', tags: ['defect', 'high'] },
+    { id: 'adoption', label: 'Win on Adoption', description: 'Sacrifice technical perfection for reach. Make it easy to adopt, license broadly, prioritize users.', risk: 'medium', tags: ['cooperate', 'medium'] },
+    { id: 'platform', label: 'Win on Distribution', description: 'Leverage existing platform power. Bundle, pre-install, use your existing user base to push adoption.', risk: 'low', tags: ['cooperate', 'low'] },
+  ],
+  idealNote: 'The optimal strategy across all three rounds is "Win on Adoption." VHS won Betamax because movies required 2-hour cassettes — Betamax\'s superior quality meant nothing if you couldn\'t record a full film. TCP/IP won OSI because it was free, open, and already deployed — OSI was still being debated in committees. Chrome won IE because Google distributed it through their homepage and made it dramatically faster. The meta-lesson: in network markets, ADOPTION trumps QUALITY every time. A technically inferior product with better adoption will beat a superior product every single time. This is the fundamental insight of network economics: the value of a network is determined by its size, not its engineering.',
+  analyze: (choice, aiChoice, history) => {
+    const round = (history?.length || 0) + 1;
+    const results = [];
+    if (round === 1) {
+      if (choice === 'adoption') return 'Round 1: VHS vs Betamax. You chose ADOPTION — longer recording time. Sony chose quality. JVC licensed VHS to every manufacturer; Sony kept Betamax proprietary. VHS won because consumers could record 2-hour movies. Betamax\'s superior picture meant nothing when you couldn\'t record an entire film. The lesson: in a standards war, the product that meets the broadest need wins — even if it\'s technically inferior. VHS was uglier, but it played longer.';
+      if (choice === 'quality') return 'Round 1: VHS vs Betamax. You chose QUALITY — superior picture and build. But Sony kept Betamax proprietary while JVC licensed VHS to anyone. By 1980, VHS had 70% market share. Betamax survived only in professional broadcasting. The lesson: perfect quality doesn\'t matter if no one uses your product. In network markets, "good enough and ubiquitous" beats "perfect and exclusive."';
+      return 'Round 1: VHS vs Betamax. You chose DISTRIBUTION — platform bundling. But neither VHS nor Betamax had a platform to leverage. This strategy works for Chrome (bundled via Google) and IE (bundled via Windows), but in 1975, there was no platform. VHS won through licensing, not bundling. The lesson: the right strategy depends on what assets you have.';
+    }
+    if (round === 2) {
+      if (choice === 'adoption') return 'Round 2: TCP/IP vs OSI. You chose ADOPTION — open, free, practical. TCP/IP was bundled with BSD Unix (free to universities). OSI was a perfect 7-layer model designed by committee — it took years to finalize while TCP/IP was already working. By the time OSI was ready, the internet ran on TCP/IP. The lesson: openness beats perfection. A working standard deployed today beats a perfect standard deployed tomorrow. TCP/IP was "good enough" and free — that was enough to win.';
+      if (choice === 'quality') return 'Round 2: TCP/IP vs OSI. You chose QUALITY — the perfectly designed protocol. OSI\'s 7-layer model was beautiful, comprehensive, and academically pure. But it was also proprietary, complex, and years late. While OSI committees debated, TCP/IP was running the internet. The lesson: in standards, speed trumps perfection. A perfect standard that arrives too late is worthless.';
+      return 'Round 2: TCP/IP vs OSI. You chose DISTRIBUTION — platform leverage. TCP/IP was bundled with BSD Unix, which gave it massive distribution in universities. BSD wasn\'t a "platform" in the modern sense, but it was the closest thing. This distribution advantage seeded TCP/IP across the academic world, creating a generation of engineers trained on it. The lesson: distribution through existing infrastructure is a powerful moat — even when that infrastructure is just a university operating system.';
+    }
+    if (choice === 'adoption') return 'Round 3: Chrome vs Internet Explorer. You chose ADOPTION — make a fast, clean browser and distribute it through your existing platform (Google.com). Chrome was technically superior to IE6 (faster, more secure, cleaner). But more importantly, Google put Chrome on the world\'s most visited homepage. Within 5 years, Chrome dominated. The lesson: the best distribution is a platform users already visit. Google didn\'t need to bundle with an OS — they had the web itself.';
+    if (choice === 'quality') return 'Round 3: Chrome vs Internet Explorer. You chose QUALITY — and it worked. Chrome WAS technically superior: faster JavaScript engine, sandboxed tabs, automatic updates. But quality alone wouldn\'t have beaten IE\'s Windows monopoly. What made Chrome unstoppable was Google using its homepage as a distribution channel. Lesson: quality helps, but it\'s rarely enough on its own. The best products with the best distribution always win.';
+    return 'Round 3: Chrome vs Internet Explorer. You chose DISTRIBUTION — bundling with Windows. IE had 95% market share in 2004 because Microsoft bundled it with every Windows installation. But bundling without maintaining quality backfired: IE stagnated for 5 years (IE6 to IE7), and users defected to Firefox and Chrome. The lesson: distribution is powerful but perishable. If you don\'t maintain quality, your platform advantage erodes. IE had the ultimate distribution moat but lost it through neglect.';
+  },
+  evaluateOutcome: (totalDelta, history) => {
+    const adoptionRounds = history.filter(r => r.playerChoice === 'adoption').length;
+    if (adoptionRounds >= 2) return 'victory';
+    if (adoptionRounds >= 1) return 'mixed';
+    return 'defeat';
+  },
+  customResolve: (playerChoice, aiChoices, gameState, round, history) => {
+    const roundNames = ['VHS vs Betamax', 'TCP/IP vs OSI', 'Chrome vs IE'];
+    const r = round || 0;
+    const roundName = roundNames[r] || 'Standards War';
+    const aiChoice = Object.values(aiChoices)[0];
+    if (playerChoice === 'adoption') {
+      const won = aiChoice !== 'adoption';
+      return {
+        outcome: won ? 'victory' : 'mixed',
+        score: won ? 3 : 1,
+        narrative: won
+          ? `Round ${r + 1} (${roundName}): You prioritized adoption. The market rewarded reach over perfection.`
+          : `Round ${r + 1} (${roundName}): Both focused on adoption — a draw in the race for users.`,
+        resourceChanges: { gold: won ? 30 : 10, influence: won ? 10 : 0 },
+        relationshipChanges: {},
+      };
+    }
+    return {
+      outcome: 'defeat',
+      score: 0,
+      narrative: `Round ${r + 1} (${roundName}): You focused on ${playerChoice === 'quality' ? 'technical quality' : 'platform leverage'}. The market chose the more adoptable alternative.`,
+      resourceChanges: { gold: -10, influence: -5 },
+      relationshipChanges: {},
+    };
+  },
+  agents: {
+    market: { personality: 'opportunist', name: 'The Market' },
+  },
+});

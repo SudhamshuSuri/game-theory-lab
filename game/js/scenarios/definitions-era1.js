@@ -209,3 +209,46 @@ scenarioRegistry.register({
     competitor: { personality: 'greedy', name: 'The Freeport Baker' },
   },
 });
+
+scenarioRegistry.register({
+  id: 'boss-cuban-missile',
+  title: 'The Cuban Missile Crisis',
+  era: 1,
+  order: 10.5,
+  bossFight: true,
+  concept: 'chicken',
+  type: 'chicken',
+  story: [
+    { speaker: 'Advisor', text: 'Mr. President, reconnaissance has confirmed Soviet nuclear missiles in Cuba — 90 miles from Florida.' },
+    { speaker: 'Kennedy', text: 'Khrushchev is testing us. If we do nothing, the strategic balance shifts. If we attack, we risk nuclear war.' },
+    { speaker: 'Joint Chiefs', text: 'We recommend an immediate airstrike to destroy the missile sites before they become operational.' },
+    { speaker: 'State Dept', text: 'A blockade is the safer path: firm but not an act of war. It gives Khrushchev room to back down.' },
+    { speaker: 'Your Advisor', text: 'Khrushchev is playing the same game you are. Whoever flinches first loses. If neither flinches — catastrophe.' },
+  ],
+  context: 'October 16, 1962. Soviet nuclear missiles in Cuba. You are President Kennedy. Khrushchev has the same options: stand firm or back down. In game theory, this is Chicken — the game where the rational move is to appear irrational. The player who can credibly commit to "never swerve" forces the other to blink. The naval blockade was a masterstroke of commitment: it created a situation where both sides had time and incentive to de-escalate.',
+  choices: [
+    { id: 'blockade', label: 'Naval Blockade', description: 'Quarantine Cuba. Firm, visible, but not an act of war. Gives Khrushchev a face-saving exit.', risk: 'medium', tags: ['cooperate', 'medium'] },
+    { id: 'airstrike', label: 'Immediate Airstrike', description: 'Destroy the missile sites. Decisive action — but risks rapid escalation to all-out war.', risk: 'high', tags: ['defect', 'high'] },
+  ],
+  idealNote: 'The optimal strategy was the naval blockade — a middle path that communicated resolve without forcing Khrushchev into a corner. In game theory, this is "brinkmanship": create a situation where both sides have an incentive to de-escalate. Kennedy gave Khrushchev an exit: remove the missiles and the US would not invade Cuba. The blockade was brilliant because it made the US look resolute while keeping the door open for Soviet de-escalation. In Chicken, the worst outcome is both standing firm. The blockade transformed the game from Chicken into a waiting game — one Khrushchev could lose gracefully.',
+  analyze: (choice, aiChoice) => {
+    if (choice === 'blockade') {
+      if (aiChoice === 'blockade') return 'Both chose the blockade. A tense standoff — the world watches. Khrushchev blinks first; the missiles are removed. You won the game of chicken through a combination of resolve and restraint. The blockade worked because it was a "limited" move — it escalated the conflict but left both sides a path to de-escalate without losing face. In real history, this is exactly what happened: Kennedy announced the quarantine, Soviet ships stopped at the line, and back-channel negotiations resolved the crisis. The lesson: in brinkmanship, the best move is one that communicates resolve while leaving your opponent a way out.';
+      return 'You chose the blockade. Khrushchev ordered an airstrike on Guantanamo. The crisis spirals. Your restraint was seen as weakness — he pushed harder. In Chicken, if one player swerves and the other doesn\'t, the swerver loses everything. The lesson: brinkmanship requires credibility. If your threat isn\'t believable, your opponent will call your bluff.';
+    }
+    if (choice === 'airstrike') {
+      if (aiChoice === 'airstrike') return 'Mutual airstrikes. The world descends into nuclear war. This is the worst outcome of Chicken: both players stood firm and neither blinked. In game theory, this is the (defect, defect) cell — the mutually destructive outcome. Real history: Kennedy\'s military advisors recommended this. He rejected it. Why? Because in Chicken, the threat of mutual destruction only works if you DON\'T actually carry it out. The paradox of brinkmanship: you must be willing to go to the brink, but not cross it.';
+      return 'You authorized the airstrike. Khrushchev blinks — Soviet ships turn back. You won decisively. But at what cost? The world came closer to nuclear war than ever before. In Chicken, standing firm while the other swerves is the best individual outcome. But the risk you took was enormous. This is the tension at the heart of Chicken: the best outcome requires maximum risk.';
+    }
+    return 'In the game of Chicken, the ideal outcome is to stand firm while your opponent swerves. But the challenge is credible commitment: how do you convince the other side you WILL stand firm — even when it\'s irrational to do so? Kennedy solved this with the blockade: a public, visible, hard-to-reverse commitment that gave Khrushchev time to de-escalate with dignity.';
+  },
+  customResolve: (playerChoice, aiChoices) => {
+    if (playerChoice === 'blockade') {
+      return { outcome: 'victory', score: 7, narrative: 'The naval blockade works. Khrushchev blinks — Soviet ships turn back. The missiles are removed. Kennedy\'s combination of resolve and restraint averted nuclear war. In Chicken, the best move is one that communicates resolve while leaving your opponent a way out.', resourceChanges: { gold: 50, influence: 40 }, relationshipChanges: {} };
+    }
+    return { outcome: 'defeat', score: 1, narrative: 'The airstrike triggers a chain reaction. Khrushchev responds in kind. The world spirals toward nuclear war. In Chicken, carrying out the threat of mutual destruction is catastrophic. The paradox of brinkmanship: you must be willing to go to the brink, but not cross it.', resourceChanges: { gold: -150, military: -50, influence: -30 }, relationshipChanges: {} };
+  },
+  agents: {
+    khrushchev: { personality: 'riskSeeking', name: 'Premier Khrushchev' },
+  },
+});

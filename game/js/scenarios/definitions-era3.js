@@ -550,3 +550,44 @@ scenarioRegistry.register({
   },
 });
 
+scenarioRegistry.register({
+  id: 'boss-d-day-deception',
+  title: 'Operation Fortitude',
+  era: 3,
+  order: 30.5,
+  bossFight: true,
+  concept: 'signaling',
+  type: 'signaling',
+  story: [
+    { speaker: 'Eisenhower', text: 'The fate of Europe rests on one question: where will the Germans believe we land?' },
+    { speaker: 'Montgomery', text: 'They know an invasion is coming. The only unknown is where. We must make them believe it\'s Pas de Calais, not Normandy.' },
+    { speaker: 'Intelligence Officer', text: 'We\'ve created an entirely fake army group — FUSAG — under General Patton. Inflatable tanks, fake radio traffic, dummy landing craft. The Abwehr has informants we\'ve "turned" — they\'re feeding the deception directly to Berlin.' },
+    { speaker: 'Eisenhower', text: 'The Germans have their own intelligence. They\'ll be trying to screen our signals. The question is: how much will they believe?' },
+  ],
+  context: '1944. The Allies are about to launch the largest amphibious invasion in history. But the Germans know it\'s coming. The only question: where? The Allies have built an entirely fake army (FUSAG) — inflatable tanks, fake radio traffic, double agents, dummy landing craft — all pointing to Pas de Calais. You are a German intelligence analyst. The signals you receive are a mix of genuine deception (the fake army) and real preparations (Normandy). Your job: screen the signals, update your beliefs, and advise the High Command. This is a signaling game: the Allies choose what to signal, the Germans choose what to believe.',
+  choices: [
+    { id: 'believe_calais', label: 'Believe Calais', description: 'Trust the overwhelming evidence. Patton\'s army is real — the main invasion will hit Calais. Hold the panzer divisions in reserve near Calais.', risk: 'high', tags: ['defect', 'high'] },
+    { id: 'believe_normandy', label: 'Believe Normandy', description: 'Trust the double agent\'s last-minute tip. Calais is a decoy — the real blow falls at Normandy. Commit reserves south.', risk: 'high', tags: ['defect', 'high'] },
+    { id: 'wait', label: 'Wait for Proof', description: 'Split your reserves between both locations. Safe but guarantees you\'re too slow to reinforce the real landing point.', risk: 'low', tags: ['cooperate', 'safe'] },
+  ],
+  idealNote: 'The optimal intelligence assessment was to believe Normandy — but you needed the right evidence. The Allies\' deception was incredibly costly: an entire fake army group with real radio traffic, real command structures, real supply depots. This is a "costly signal" — the very expense of the deception made it credible (why spend millions on a fake army if it wasn\'t protecting something real?). The key intelligence came from Ultra (decrypted German communications) and the double agent network. When the Germans saw that Allied agents in Calais were unusually quiet, and that resistance activity in Normandy increased, the pattern emerged. In game theory terms: the optimal screening strategy is to look for signals that are costly to fake. The Allies\' deception was so good that the Germans never fully solved it — even after D-Day, Hitler held reserves at Calais for weeks, believing the Normandy landing was a diversion.',
+  analyze: (choice, aiChoice) => {
+    const landed = 'Normandy';
+    if (choice === 'believe_calais') return 'You believed the evidence pointed to Calais. The fake army was incredibly convincing — real radio traffic, real command structure, a legendary general (Patton) in charge. When the invasion hit Normandy, your panzer divisions were 200 miles away waiting at Calais. This is the perfect deception: the Allies sent costly signals (millions of dollars, thousands of personnel) that made the lie credible. In game theory, this is a "separating equilibrium" — the signal was so convincing that even a rational receiver believed it. The lesson: when evaluating intelligence, ask not just "what does the evidence say?" but "what would it cost the other side to fake this evidence?"';
+    if (choice === 'believe_normandy') return 'You trusted the double agents and Ultra intercepts. The Normandy beaches are where the real blow falls. You ordered the panzer reserves south — but too late. Rommel was in France on leave. The German response was fragmented and delayed. But here\'s the twist: you WERE right. And if Hitler had listened to his commanders who suspected Normandy, the Allied landings might have failed. The lesson: in signaling games, the best screening strategy is to triangulate across multiple independent signals. The Abwehr\'s double agents, Ultra intercepts, aerial reconnaissance, and resistance activity all pointed in different directions — but together, the pattern emerged. No single signal was reliable, but the COST of the deception (the fake army) told you something: the Allies were protecting SOMETHING important.';
+    return 'You split your reserves between Calais and Normandy. Safe — you covered both possibilities. But safe is slow. By the time you confirmed Normandy was the real invasion, your reserves were too far from the beachhead to repel the attack. This is the "pooling" strategy in signaling games: avoid committing to any interpretation, keep options open, update beliefs as new evidence arrives. In intelligence work, this is often the safest approach. But against an opponent who has invested heavily in a deception campaign, waiting for certainty means forfeiting the initiative. The lesson: in screening problems, the cost of waiting for perfect information is often higher than the cost of acting on imperfect information.';
+  },
+  customResolve: (playerChoice, aiChoices) => {
+    if (playerChoice === 'believe_normandy') {
+      return { outcome: 'victory', score: 7, narrative: 'You trusted the right signals. Normandy was the real landing. Though the German response was too slow, your assessment was correct. The costly signal of the fake army was designed to deceive — but you triangulated across multiple sources to find the truth.', resourceChanges: { influence: 40, knowledge: 30 }, relationshipChanges: {} };
+    }
+    if (playerChoice === 'believe_calais') {
+      return { outcome: 'defeat', score: 2, narrative: 'The deception worked perfectly. You committed your reserves to Calais while Normandy was the real target. The Allies\' costly signal — an entire fake army — was so convincing that even a rational analyst believed it.', resourceChanges: { influence: -30, military: -50 }, relationshipChanges: {} };
+    }
+    return { outcome: 'mixed', score: 4, narrative: 'You split your reserves. Safe, but slow. By the time you confirmed Normandy was real, the beachhead was firmly established. Waiting for certainty forfeited the initiative.', resourceChanges: { influence: -10 }, relationshipChanges: {} };
+  },
+  agents: {
+    abwehr: { personality: 'riskAverse', name: 'German High Command' },
+  },
+});
+

@@ -2,7 +2,7 @@ import { events } from '../engine/events.js';
 import { gameState } from '../engine/state.js';
 import { scenarioRegistry } from '../scenarios/registry.js';
 import { CONCEPTS } from '../data/concepts.js';
-import { FLAVOR } from '../data/flavor.js';
+import { FLAVOR, BOSS_FIGHTS } from '../data/flavor.js';
 import {
   RESOURCE_ICONS, RESOURCE_LABELS, RESOURCE_DESCRIPTIONS, formatResourceDelta,
 } from '../simulation/resources.js';
@@ -77,7 +77,7 @@ function renderMenu() {
   const s = gameState.get();
   const completedArr = s.player.completedScenarios;
   const completed = completedArr.length;
-  const total = scenarioRegistry.getAll().length;
+  const total = scenarioRegistry.getAll().filter(sc => !sc.bossFight).length;
   const discoveries = s.player.discoveries.length;
   const allScenarios = scenarioRegistry.getAll();
   const currentEra = Math.min(
@@ -86,10 +86,15 @@ function renderMenu() {
   );
 
   const eraBlocks = [1,2,3,4,5,6].map(eraNum => {
-    const scenarios = scenarioRegistry.getByEra(eraNum);
-    const done = scenarios.filter(sc => completedArr.includes(sc.id)).length;
+    const allScns = scenarioRegistry.getByEra(eraNum);
+    const normalScns = allScns.filter(sc => !sc.bossFight);
+    const bossScns = allScns.filter(sc => sc.bossFight);
+    const done = normalScns.filter(sc => completedArr.includes(sc.id)).length;
     const unlocked = eraNum <= 1 || scenarioRegistry.getByEra(eraNum - 1)
-      .every(sc => completedArr.includes(sc.id));
+      .filter(sc => !sc.bossFight).every(sc => completedArr.includes(sc.id));
+    const allNormalDone = unlocked && normalScns.every(sc => completedArr.includes(sc.id));
+    const bossData = BOSS_FIGHTS[eraNum];
+    const bossDone = bossData && completedArr.includes(bossData.id);
     return `
       <div class="config-group" style="${!unlocked ? 'opacity:0.4;' : ''}">
         <h4>${FLAVOR.titles[`era${eraNum}`] || `Era ${eraNum}`}</h4>
@@ -97,11 +102,11 @@ function renderMenu() {
           ${FLAVOR.eraDescriptions[eraNum] || ''}
         </p>
         <p style="font-size: 0.85rem; color: var(--text-secondary);">
-          ${done}/${scenarios.length} completed
+          ${done}/${normalScns.length} completed
           ${!unlocked ? ' \u{1F512} Locked: Complete Era ' + (eraNum - 1) : ''}
         </p>
         <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;">
-          ${scenarios.map(sc => {
+          ${normalScns.map(sc => {
             const isDone = completedArr.includes(sc.id);
             const isAvailable = unlocked && (isDone || eraNum <= 1 || scenarioRegistry.isUnlocked(sc.id));
             return `
@@ -114,6 +119,36 @@ function renderMenu() {
             `;
           }).join('')}
         </div>
+        ${bossData ? `
+        <div style="margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+          ${allNormalDone ? `
+            <div style="background: rgba(212,163,115,0.08); border: 1px solid var(--accent-gold); border-radius: var(--radius-md); padding: 12px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+                <div style="min-width:0;">
+                  <div style="font-size:0.7rem; color:var(--accent-gold); text-transform:uppercase; letter-spacing:1px; margin-bottom:2px;">\u{1F3F9} Boss Challenge</div>
+                  <div style="font-weight:600; color:var(--text-primary); font-size:0.95rem;">${bossData.title}</div>
+                  <div style="font-size:0.8rem; color:var(--text-muted);">${bossData.subtitle}</div>
+                </div>
+                <button class="btn ${bossDone ? 'btn-primary' : 'btn-secondary'}"
+                  style="flex-shrink:0; font-size:0.8rem; padding:6px 14px; white-space:nowrap;"
+                  ${bossDone ? 'disabled' : `onclick="App.playScenario('${bossData.id}')"`}>
+                  ${bossDone ? '\u{2713} Defeated' : '\u{2694} Fight'}
+                </button>
+              </div>
+              ${bossDone ? `
+              <div style="margin-top:8px; padding:8px; background:rgba(212,163,115,0.05); border-radius:var(--radius-sm); font-size:0.8rem; color:var(--text-secondary); font-style:italic;">
+                ${bossData.payoff}
+              </div>` : ''}
+            </div>
+          ` : `
+            <div style="background: var(--bg-tertiary); border: 1px dashed var(--border-color); border-radius: var(--radius-md); padding: 16px; opacity:0.6; text-align:center;">
+              <div style="font-size:1.8rem; font-weight:700; color:var(--text-muted); letter-spacing:4px;">???</div>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
+                ${unlocked ? 'Complete all scenarios in this era to unlock the Boss Challenge' : 'Unlock this era first'}
+              </div>
+            </div>
+          `}
+        </div>` : ''}
       </div>
     `;
   }).join('');
@@ -578,7 +613,7 @@ function renderTimeline() {
   const history = s.history;
   // Annotate history entries with scenario def, outcome, discovery info
   const seenConcepts = new Set();
-  const annotated = history.map(entry => {
+  const annotated = history.map((entry, i) => {
     const def = scenarioRegistry.get(entry.scenario);
     const scenarioName = def ? def.title : entry.scenario;
     const era = def ? def.era : 0;
@@ -596,7 +631,7 @@ function renderTimeline() {
       seenConcepts.add(concept.id);
       isDiscovery = true;
     }
-    return { ...entry, scenarioName, era, outcome, playerChoiceLabel, aiLabels, delta, concept, isDiscovery, def };
+    return { ...entry, index: i, scenarioName, era, outcome, playerChoiceLabel, aiLabels, delta, concept, isDiscovery, def };
   });
 
   const eras = [...new Set(annotated.map(e => e.era).filter(Boolean))].sort();
@@ -653,7 +688,7 @@ function renderTimeline() {
                 : '';
               return `
                 <div class="timeline-entry" style="flex-wrap: wrap;">
-                  <div class="turn-num">#${entry.turn + 1}</div>
+                  <div class="turn-num">#${history.findIndex(h => h.timestamp === entry.timestamp) + 1}</div>
                   <div class="turn-choice" style="min-width:0;">
                     <div><strong>${entry.scenarioName}</strong> ${outcomeBadge}</div>
                     <div style="color: var(--accent-gold); font-size:0.85rem;">${entry.playerChoiceLabel}</div>
@@ -788,7 +823,7 @@ function renderReplay(data) {
           <h2 style="font-family: var(--font-display);">\u{1F504} Replay: ${scenario.title}</h2>
           <p style="color: var(--text-muted); font-size: 0.85rem;">Step <span id="replay-step-num">1</span> of ${totalSteps}</p>
         </div>
-        <button class="btn btn-secondary" onclick="App.showMenu()">\u{2190} Back</button>
+        <button class="btn btn-secondary" onclick="App.replayBack()">\u{2190} Back</button>
       </div>
 
       <div style="margin: 16px 0; display: flex; align-items: center; gap: 12px;">
@@ -816,15 +851,17 @@ function renderReplay(data) {
 
 // ===================== ANALYTICS DASHBOARD =====================
 function renderAnalyticsDashboard() {
+  const s = gameState.get();
   const events = analytics.getEvents();
   const choices = events.filter(e => e.type === 'choice');
   const completions = events.filter(e => e.type === 'scenario_complete');
   const discoveries = events.filter(e => e.type === 'discovery');
   const times = events.filter(e => e.type === 'time');
 
-  const totalPlayed = completions.length;
+  const totalPlayed = s.player.completedScenarios.length;
   const coopRate = analytics.getCooperationRate();
-  const discRate = analytics.getDiscoveryRate();
+  const totalConcepts = Object.keys(CONCEPTS).length;
+  const discRate = totalConcepts > 0 ? s.player.discoveries.length / totalConcepts : 0;
   const avgTime = analytics.getAverageTimePerScenario();
 
   // Choice distribution
@@ -876,7 +913,6 @@ function renderAnalyticsDashboard() {
   }
 
   // Discovered concepts
-  const s = gameState.get();
   const discoveredIds = s.player.discoveries || [];
   const discoveredConcepts = discoveredIds.map(id => CONCEPTS[id]).filter(Boolean);
 
