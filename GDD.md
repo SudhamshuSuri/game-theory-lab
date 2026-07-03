@@ -768,16 +768,4 @@ All metrics below are tracked via `AnalyticsTracker` and persisted to localStora
 - **Testing:** Single test file (tests/test.js)
 - **Browser:** Requires ES module support (modern Chrome, Firefox, Safari, Edge)
 
----
 
-## Appendix: Changelog
-
-### 2026-07-03 — Analytics clear fix + GDD update
-
-- **Bug fix:** Analytics "Clear Data" button inlined `analytics.clear()` in an onclick handler, but `analytics` is an ES module import (not on window), so the call silently failed. Moved to `App.clearAnalytics()` method where module scope is accessible.
-- **Bug fix:** Analytics dashboard sourced some KPIs (scenarios played, discovery rate, concepts list) from `gameState` rather than analytics events, so clearing analytics didn't reset those displays. Changed to derive all dashboard data from analytics events only.
-- **Feature:** `App.clearAnalytics()` now also resets game state and removes autosave from localStorage, producing a completely fresh game state.
-- **Boss fights:** 6 boss fight scenarios added across all eras (The King's Decree, Too Big to Fail, Operation Deception, The Silk Road Summit, The Cuban Quarantine, The Paris Accord).
-- **Replay mode:** Fixed broken rendering and per-round scores always showing zero.
-- **Concept detail overlay:** Added clickable concept detail overlay from encyclopedia.
-- **Analytics dashboard & timeline:** Enhanced with cooperation trend chart, era breakdown, retry rates, and resource history visualization.
