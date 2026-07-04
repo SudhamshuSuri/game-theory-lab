@@ -97,6 +97,13 @@ export const AI_PERSONALITIES = {
     traits: { greed: 2, trust: 3, revenge: 10, risk: 2, planning: 9, deception: 1, reciprocity: 10 },
     color: '#d84a4a',
   },
+  learningAgent: {
+    id: 'learningAgent',
+    name: 'Adaptive',
+    description: 'Studies your patterns and adapts. Starts cooperative, builds an opponent model, then chooses the optimal counter-strategy.',
+    traits: { greed: 5, trust: 5, revenge: 5, risk: 4, planning: 10, deception: 5, reciprocity: 8 },
+    color: '#bc8cff',
+  },
 };
 
 export function createAgentFromPersonality(personalityId, name) {

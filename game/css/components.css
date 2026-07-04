@@ -654,6 +654,71 @@
 .round-dot.defect { background: var(--accent-red); border-color: var(--accent-red); }
 .round-dot.cooperate { background: var(--accent-green); border-color: var(--accent-green); }
 
+/* ===== GAME TREE ===== */
+.game-tree {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  font-family: monospace;
+  font-size: 0.85rem;
+  line-height: 1.8;
+  overflow-x: auto;
+}
+
+.game-tree h3 {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.tree-level {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.tree-node {
+  position: relative;
+}
+
+.tree-branch-label {
+  color: var(--accent-blue);
+  font-weight: 600;
+  margin: 4px 0;
+}
+
+.tree-leaf {
+  color: var(--text-primary);
+  padding: 2px 0 2px 16px;
+  border-left: 2px solid var(--border-color);
+  margin: 2px 0;
+}
+
+.tree-leaf.chosen-path {
+  border-left-color: var(--accent-gold);
+  background: rgba(212, 163, 115, 0.08);
+  border-radius: 0 4px 4px 0;
+}
+
+.tree-payoff {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.tree-chosen-badge {
+  color: var(--accent-gold);
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.chosen-path > .tree-branch-label {
+  color: var(--accent-gold);
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 700px) {
   .choices-container { grid-template-columns: 1fr; }

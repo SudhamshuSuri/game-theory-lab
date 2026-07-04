@@ -632,13 +632,13 @@ See Section 9.3 for full details. KPIs, charts, CSV export, and data clearing.
 
 *Not yet implemented.* Planned: Compare two scenarios side by side.
 
-### 11.10 Decision Trees 🚧
+### 11.10 Decision Trees ✅
 
-*Not yet implemented.* Planned: For any scenario, view the complete decision tree.
+For extensive-form / sequential scenarios, the results screen shows the complete game tree as an interactive HTML visualization. Branches show available actions, leaf nodes show payoffs, and the player's chosen path is highlighted. Currently rendered for `the-mountain-pass` scenario; reusable for any scenario with a `gameTree` field in its definition.
 
-### 11.11 AI Reasoning Viewer 🚧
+### 11.11 AI Reasoning Viewer ✅
 
-*Not yet implemented.* Planned: After a scenario, see each AI agent's personality analysis, predictions, and decision rationale.
+After completing any scenario, the "What They Chose" section shows each AI agent's internal reasoning inline below their choice. Each of the 15 personalities (alwaysCooperate, alwaysDefect, titForTat, random, greedy, riskSeeking, riskAverse, longTermPlanner, revengeDriven, trustBuilder, opportunist, coalitionFormer, deceptive, grimTrigger, learningAgent) returns a personalized explanation of why it made its decision, including historical context when relevant.
 
 ### 11.12 Heatmaps ✅
 
@@ -656,9 +656,9 @@ Implemented in Sandbox mode. Choice frequency heatmap shows player vs AI decisio
 
 *Not yet implemented.* Planned: Template permutations for infinite scenarios.
 
-### 11.16 Learning Agent AI 🚧
+### 11.16 Learning Agent AI ✅
 
-*Not yet implemented.* The AI personality system includes 14 presets, but the adaptive learning agent that models player behavior is a stub (commented out).
+The `learningAgent` personality is fully implemented as the 15th AI preset. It uses `AgentMemory` to track the player's historical choices, builds an opponent model based on cooperation/defection rates, and selects the optimal counter-strategy: exploits highly cooperative opponents (defects for maximum gain), defends against highly defective opponents (defects for safety), and uses tit-for-tat against mixed/unpredictable opponents. Each decision includes detailed reasoning shown in the AI Reasoning Viewer.
 
 ---
 
@@ -707,7 +707,7 @@ All metrics below are tracked via `AnalyticsTracker` and persisted to localStora
 - [x] Timeline viewer (with era filtering)
 - [x] Replay mode (step-by-step with slider)
 - [x] Encyclopedia (with locked/unlocked concept cards)
-- [ ] AI reasoning viewer — *Not yet implemented*
+- [x] AI reasoning viewer (per-agent decision rationale in results)
 - [x] Art and visual polish (CSS animations, dark theme)
 - [ ] Sound design — *Not yet implemented*
 - [ ] Accessibility features — *Not yet implemented*
@@ -722,9 +722,14 @@ All metrics below are tracked via `AnalyticsTracker` and persisted to localStora
 - [ ] Community sharing for editor — *Not yet implemented*
 
 ### Phase 4: Mastery ✅ Mostly Complete
-- [x] Era VI scenarios (51-59 + Boss)
+- [x] Era VI scenarios (51-63.5 + Boss)
 - [x] Society designer capstone (scenario: The Society)
 - [x] Analytics dashboard (KPIs, charts, CSV export, clear)
+- [x] Decision trees visualization (game-tree rendering in results)
+- [x] Learning Agent AI (15th personality, adaptive opponent modeling)
+- [x] Extensive-form games scenario (the-mountain-pass)
+- [x] Plurality & Ranked Choice voting discovery cards (split from generic voting)
+- [x] Nash Equilibrium & Mixed Strategy concept enhancements (payoff matrices, firstEncounter)
 - [ ] Leaderboards — *Not yet implemented*
 - [ ] Teacher/classroom support — *Not yet implemented*
 - [ ] Multiplayer (optional) — *Not yet implemented*

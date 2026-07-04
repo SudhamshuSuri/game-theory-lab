@@ -314,7 +314,7 @@ scenarioRegistry.register({
   title: 'The Voting Reform',
   era: 4,
   order: 36,
-  concept: 'voting',
+  concept: 'pluralityVoting',
   type: 'voting',
   setup: (state) => {
     state.player.resources.influence = 30;

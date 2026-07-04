@@ -230,11 +230,13 @@ window.App = {
     const choiceIds = def.choices.map(c => c.id);
 
     const aiChoices = {};
+    const aiReasoning = {};
     for (const [agentId, agent] of Object.entries(_currentInstances.agents)) {
       aiChoices[agentId] = decisionEngine.makeChoice(
         _currentInstances._agentData[agentId],
         choiceId, def.id, choiceIds, gameState, round, history
       );
+      aiReasoning[agentId] = decisionEngine.getLastReasoning(agent.name || agentId);
     }
 
     let result;
@@ -268,10 +270,10 @@ window.App = {
             : `After ${def.totalRounds} rounds, net loss: ${totalDelta} gold.`,
         };
 
-        this._completeScenario(def, choiceId, aiChoices, result, history, true);
+        this._completeScenario(def, choiceId, aiChoices, result, history, true, aiReasoning);
       } else {
         render('results', {
-          scenario: def, result, playerChoice: choiceId, aiChoices,
+          scenario: def, result, playerChoice: choiceId, aiChoices, aiReasoning,
           isMultiRound: true, multiRoundComplete: false, history,
         });
       }
@@ -283,13 +285,13 @@ window.App = {
           gameState.modifyRelationship(faction, delta);
         }
       }
-      this._completeScenario(def, choiceId, aiChoices, result);
+      this._completeScenario(def, choiceId, aiChoices, result, null, false, aiReasoning);
     }
 
     analytics.trackChoice(def.id, choiceId, result.outcome);
   },
 
-  _completeScenario(def, choiceId, aiChoices, result, history = null, isMultiRound = false) {
+  _completeScenario(def, choiceId, aiChoices, result, history = null, isMultiRound = false, aiReasoning = {}) {
     const timeSpent = Date.now() - _scenarioStartTime;
     analytics.trackTime(def.id, timeSpent);
     analytics.trackScenarioComplete(def.id, 1, result.outcome || 'mixed');
@@ -322,7 +324,7 @@ window.App = {
     gameState.incrementTurn();
 
     render('results', {
-      scenario: def, result, playerChoice: choiceId, aiChoices,
+      scenario: def, result, playerChoice: choiceId, aiChoices, aiReasoning,
       isMultiRound, multiRoundComplete: true, history,
     });
   },
@@ -334,13 +336,18 @@ window.App = {
   },
 
   continueAfterResult(scenarioId) {
-    _pendingDiscovery = null;
-    gameState.update('world.pendingDiscovery', null);
     const next = scenarioRegistry.getNextScenario(scenarioId);
     if (next) {
       this.playScenario(next.id);
     } else {
-      this.showMenu();
+      const pending = gameState.get().world.pendingDiscovery;
+      if (pending) {
+        _pendingDiscovery = null;
+        gameState.update('world.pendingDiscovery', null);
+        render('discovery', { conceptId: pending });
+      } else {
+        this.showMenu();
+      }
     }
   },
 

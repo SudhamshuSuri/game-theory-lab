@@ -169,7 +169,7 @@ scenarioRegistry.register({
   title: 'The Election',
   era: 6,
   order: 54,
-  concept: 'voting',
+  concept: 'rankedChoiceVoting',
   type: 'voting',
   setup: (state) => {
     state.player.resources.influence = 50;
@@ -747,6 +747,84 @@ scenarioRegistry.register({
   },
   agents: {
     chronicler: { personality: 'trustBuilder', name: 'The Chronicler' },
+  },
+});
+
+scenarioRegistry.register({
+  id: 'the-mountain-pass',
+  title: 'The Mountain Pass',
+  era: 6,
+  order: 63.5,
+  concept: 'extensiveFormGames',
+  type: 'negotiation',
+  setup: (state) => {
+    state.player.resources.gold = 100;
+  },
+  story: [
+    { speaker: 'Caravan Master', text: 'The Jagged Peak Pass is the only route through the mountains before winter. The Wardens control the gate. They demand 30 gold per caravan.' },
+    { speaker: 'Warden Commander', text: 'Thirty gold. That is our price. You may pay it, turn back, or try to force your way through. But I warn you: we have fortified the narrows. An attack will cost you dearly.' },
+    { speaker: 'Your Advisor', text: 'This is an extensive-form game, my lord. The Warden moves first with a demand. We move second. But we must look ahead — if we attack, will they truly fight? Or is their threat a bluff? Think ahead, then think backward.' },
+  ],
+  context: 'The Warden demands 30 gold for passage. You have three options: (1) Pay — lose 30 gold, pass safely. (2) Challenge — attack the pass; the Wardens will either Yield (you get through cheap, they lose face) or Hold (bloody stalemate, both lose). (3) Retreat — turn back, losing 10 gold in wasted supplies.\n\nGame tree (You, Wardens):\n├── Pay → (70, 30)\n├── Challenge → Warden Yields: (90, -5)\n│             └─ Warden Holds: (10, -10)\n└── Retreat → (90, 0)\n\nBackward induction test: If you challenge, will the Wardens yield or hold?',
+  choices: [
+    { id: 'pay', label: 'Pay the Toll', description: 'Pay 30 gold. Safe and certain. You pass unimpeded.', risk: 'low', tags: ['safe', 'cooperate'] },
+    { id: 'challenge', label: 'Challenge the Wardens', description: 'Attack the pass. If they yield, you get through cheap. If they hold, heavy losses. The outcome depends on the credibility of their threat.', risk: 'high', tags: ['high'] },
+    { id: 'retreat', label: 'Turn Back', description: 'Retreat and wait for spring. Wasted supplies cost 10 gold. Safe but indecisive.', risk: 'low', tags: ['safe'] },
+  ],
+  idealNote: 'The subgame perfect equilibrium depends on the Warden\'s payoffs. If the Wardens prefer Yielding (-5) over Holding (-10), then your challenge will succeed: they yield, you get 90. If they prefer Holding over Yielding, your challenge fails: you get 10, worse than paying (70) or retreating (90). Since the Wardens are risk-averse, they prefer to yield rather than fight a costly battle. So challenge is the optimal move. This illustrates backward induction: start at the last decision node (Warden\'s choice to yield or hold), determine what they will do (yield, since -5 > -10), then fold that back: {Challenge → Yield = 90} > {Pay = 70} > {Retreat = 90 — tie with Challenge}. Challenge yields 90, the same as retreat, but with the chance of gaining strategic advantage.',
+  gameTree: [
+    { label: 'You Decide', branch: true, children: [
+      { label: 'Pay Toll', payoff: [70, 30], id: 'pay', terminal: true },
+      { label: 'Challenge', branch: true, children: [
+        { label: 'Warden Yields', payoff: [90, -5], terminal: true },
+        { label: 'Warden Holds', payoff: [10, -10], terminal: true }
+      ]},
+      { label: 'Retreat', payoff: [90, 0], id: 'retreat', terminal: true }
+    ]}
+  ],
+  customResolve: (playerChoice, aiChoices) => {
+    const wardenDisposition = Object.values(aiChoices)[0];
+    const wardenYields = wardenDisposition === 'pay' || wardenDisposition === 'retreat';
+    if (playerChoice === 'challenge' && wardenYields) {
+      return { outcome: 'victory', score: 9, narrative: 'You attacked the pass. The Wardens, true to their risk-averse nature, yielded. Your caravan passes through with minimal losses.', resourceChanges: { gold: -5, influence: 25 }, relationshipChanges: {} };
+    }
+    if (playerChoice === 'challenge') {
+      return { outcome: 'defeat', score: 2, narrative: 'You attacked the pass. The Wardens held their ground. Bloody stalemate — heavy casualties and the pass remains closed.', resourceChanges: { gold: -50, influence: -10 }, relationshipChanges: {} };
+    }
+    if (playerChoice === 'pay') {
+      return { outcome: 'victory', score: 5, narrative: 'You paid the toll. Safe passage at a price. The Wardens count their gold.', resourceChanges: { gold: -30 }, relationshipChanges: {} };
+    }
+    return { outcome: 'mixed', score: 3, narrative: 'You turned back. A cautious retreat. Your caravan will try again in spring.', resourceChanges: { gold: -10 }, relationshipChanges: {} };
+  },
+  analyze: (choice, aiChoice) => {
+    const wardenConciliatory = aiChoice === 'pay' || aiChoice === 'retreat';
+    const wardenChoseYield = wardenConciliatory;
+    const wardenResponse = wardenChoseYield
+      ? 'the Wardens yield (-5). They prefer yielding over the bloodier alternative.'
+      : 'the Wardens hold (-10). They prefer fighting over the shame of yielding.';
+
+    const backwardInduction = `
+BACKWARD INDUCTION WALKTHROUGH:
+Step 1 — Start at the end: If you challenge the pass, the Wardens face a choice: Yield (payoff: -5) or Hold (payoff: -10). ${wardenResponse}
+Step 2 — Fold back: Since ${wardenChoseYield ? 'the Wardens yield' : 'the Wardens hold'}, the outcome of "challenge" is: You get ${wardenChoseYield ? '90' : '10'}, Wardens get ${wardenChoseYield ? '-5' : '-10'}.
+Step 3 — Compare at your decision node: Pay \u2192 (70, 30). Challenge \u2192 (${wardenChoseYield ? '90, -5' : '10, -10'}). Retreat \u2192 (90, 0).`;
+
+    if (choice === 'challenge') {
+      const optimalPart = wardenChoseYield
+        ? 'Your choice is optimal: Challenge yields 90, which equals or beats both Pay (70) and Retreat (90). The Wardens\' threat to hold was NOT credible — they prefer yielding over fighting.'
+        : 'Your choice was suboptimal: Challenge yields 10, worse than both Pay (70) and Retreat (90). The Wardens\' threat to hold WAS credible — they prefer fighting over yielding.';
+      return backwardInduction + '\n\nYOUR CHOICE: Challenge.\n\n' + optimalPart +
+        '\n\nThe key lesson: backward induction strips away bluffs. A threat is only credible if the person making it would actually follow through. If the Wardens are risk-averse (prefer yielding to fighting), their "we will fight" threat is an empty bluff, and the subgame perfect equilibrium is Challenge → Yield. If they are aggressive (prefer fighting to yielding), their threat is credible, and the equilibrium is Pay or Retreat. Real-world application: in legal settlements, the plaintiff decides whether to sue based on whether the defendant\'s "we will fight to the end" threat is credible. If the defendant would settle rather than face trial costs, the plaintiff should sue. This is backward induction in action: estimate the opponent\'s payoff at the last stage, and work backward to determine the optimal first move.';
+    }
+    if (choice === 'pay') {
+      return backwardInduction + '\n\nYOUR CHOICE: Pay the toll.\n\n' +
+        'You chose the safe, certain option. Paying 70 is guaranteed — no risk. This is rational if you believe the Wardens\' threat is credible (they would hold if attacked). However, a risk-averse Warden would yield, making Challenge the optimal move. Your conservatism costs you 20 gold compared to the equilibrium path. The lesson: sometimes the "safe" choice is actually suboptimal if the opponent\'s threat is not credible. In extensive-form games, the optimal strategy requires correctly assessing the opponent\'s payoffs at every decision node. If you misjudge their preferences (e.g., thinking they\'ll fight when they\'d actually yield), you leave money on the table. Real-world parallel: in negotiations, paying the asking price is safe but often suboptimal. Making a credible counter-offer (backed by a real alternative) can yield a better deal.';
+    }
+    return backwardInduction + '\n\nYOUR CHOICE: Retreat.\n\n' +
+      'You chose to turn back. You lose 10 gold in wasted supplies. This is the "outside option" — you choose not to play the game at all. Retreat yields 90, which ties with the optimal equilibrium path (Challenge → Yield = 90). So retreat is not strictly worse than the equilibrium. However, retreat forfeits the strategic advantage you could have gained by challenging: influence, reputation, and future leverage. In extensive-form terms, retreat is a "safe" option that preserves your resources but sacrifices any gain. Sometimes the outside option IS optimal — if the expected value of playing is negative (e.g., if the Wardens would hold and you\'d get 10). But when the equilibrium yields the same payoff as retreat, playing the game at least provides information and reputation benefits. The lesson: the outside option sets your reservation value. Any equilibrium outcome below this value should be rejected. This is the foundation of bargaining theory: your "best alternative to negotiated agreement" (BATNA) determines how much you can demand.';
+  },
+  agents: {
+    warden: { personality: 'riskAverse', name: 'Warden Commander' },
   },
 });
 

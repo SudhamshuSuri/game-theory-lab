@@ -293,7 +293,7 @@ function renderScenario(scenarioDef, instances) {
 
 // ===================== RESULTS VIEW =====================
 function renderResults(data) {
-  const { scenario, result, playerChoice, aiChoices, isMultiRound, multiRoundComplete, history } = data;
+  const { scenario, result, playerChoice, aiChoices, aiReasoning, isMultiRound, multiRoundComplete, history } = data;
   const isVictory = result.outcome === 'victory';
   const isDefeat = result.outcome === 'defeat';
   const outcomeClass = isVictory ? 'victory' : isDefeat ? 'defeat' : 'mixed';
@@ -318,9 +318,14 @@ function renderResults(data) {
           const agentConfig = scenario.agents?.[agentId];
           const name = agentConfig?.name || agentId.charAt(0).toUpperCase() + agentId.slice(1);
           const label = (scenario.choices || []).find(c => c.id === choice)?.label || choice;
+          const reasoning = aiReasoning?.[name] || '';
           return `
             <div style="font-size: 0.9rem; padding: 4px 0;">
               <strong>${name}:</strong> <span style="color: var(--accent-gold);">${label}</span>
+              ${reasoning ? `
+              <div style="font-size: 0.8rem; color: var(--text-muted); padding: 4px 0 0 12px; border-left: 2px solid var(--accent-blue); margin: 4px 0 0 8px;">
+                <em>${reasoning}</em>
+              </div>` : ''}
             </div>
           `;
         }).join('')}
@@ -367,6 +372,8 @@ function renderResults(data) {
         <h3 style="color: var(--accent-teal);">\u{1F3AF} Optimal Strategy</h3>
         <p style="font-size: 0.9rem;">${scenario.idealNote}</p>
       </div>` : ''}
+
+      ${scenario.gameTree ? renderGameTree(scenario.gameTree, playerChoice) : ''}
 
       <div class="btn-group">
         ${isMultiRound && !multiRoundComplete ? `
@@ -1120,4 +1127,40 @@ function renderAnalyticsDashboard() {
       </div>
     </div>
   `;
+}
+
+function renderGameTree(tree, chosenId) {
+  let html = '<div class="game-tree"><h3>\u{1F333} Game Tree</h3>';
+  html += _renderTreeNodes(tree, chosenId, 0);
+  html += '</div>';
+  return html;
+}
+
+function _renderTreeNodes(nodes, chosenId, depth) {
+  let html = '<ul class="tree-level">';
+  for (const node of nodes) {
+    const isChosen = node.id && node.id === chosenId;
+    const pathClass = isChosen ? ' chosen-path' : '';
+    const indent = '&nbsp;'.repeat(depth * 2);
+    html += '<li class="tree-node' + pathClass + '">';
+    if (node.branch) {
+      html += `<div class="tree-branch-label">${indent}${node.label}</div>`;
+      if (node.children) {
+        html += _renderTreeNodes(node.children, chosenId, depth + 1);
+      }
+    } else {
+      html += '<div class="tree-leaf' + pathClass + '">';
+      html += `${indent}${node.label}`;
+      if (node.payoff) {
+        html += ` <span class="tree-payoff">\u2192 (${node.payoff[0]}, ${node.payoff[1]})</span>`;
+      }
+      if (isChosen) {
+        html += ' <span class="tree-chosen-badge">\u2190 Your Choice</span>';
+      }
+      html += '</div>';
+    }
+    html += '</li>';
+  }
+  html += '</ul>';
+  return html;
 }
