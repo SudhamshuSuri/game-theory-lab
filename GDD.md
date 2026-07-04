@@ -157,7 +157,7 @@ The game is divided into 6 eras, each teaching a family of concepts, plus a **Bo
 | 40 | The New Trade Route | Network effects | A trade route becomes more valuable as more use it. Early adopters vs late joiners. |
 | B4 | The Silk Road Summit | Boss: Grand Bargain | Competing empires meet to divide trade routes. Every handshake hides a knife. Forge the deal that survives the night. |
 
-**Era IV Unlock:** "Discovery Cards" — **Auctions (4 types)**, **Voting Systems**, **Mechanism Design**, **Congestion**, **Network Effects**.
+**Era IV Unlock:** "Discovery Cards" — **Auctions (4 types)**, **Plurality Voting**, **Mechanism Design**, **Congestion**, **Network Effects**.
 
 ### Era V: Society & Evolution (Scenarios 41–50 + Boss)
 
@@ -185,18 +185,23 @@ The game is divided into 6 eras, each teaching a family of concepts, plus a **Bo
 
 | # | Scenario | Concept | Setting |
 |---|----------|---------|---------|
-| 51 | The Salary Negotiation | Bargaining, ultimatum game | Negotiate your advisor's salary. Offer too little and they leave. Too much and treasury suffers. |
-| 52 | The Merger | Bargaining with outside options | Two guilds consider merging. Each has alternatives. The best alternative sets the floor. |
-| 53 | The Treaty of Freeport | Multilateral negotiation N-player | Multiple parties, multiple issues. Logrolling and package deals. |
-| 54 | The Great Game | International diplomacy | A grand strategic simulation with multiple kingdoms. Balance of power. |
-| 55 | The Dating Market | Matching theory, stable marriage | Pairing problem. Can you find stable matches? |
-| 56 | The Algorithm's Choice | AI alignment, principal-agent with AI | You design an AI agent's objective function. It optimizes. The results are unexpected. |
-| 57 | The Distributed Ledger | Blockchain, consensus mechanisms | Design a consensus protocol. Trade off security, speed, and decentralization. |
-| 58 | The Cloud Wars | Computing resource allocation | Multiple services share computing resources. Peak demand causes congestion. Dynamic pricing emerges. |
-| 59 | The Social Network | Network games, platform design | Design a social network. Attention is the resource. Engagement vs well-being trade-off. |
-| B6 | The Paris Accord | Boss: Global Cooperation | Climate change is the ultimate collective action problem. Each nation's choice affects all. Can you forge a treaty that holds? |
+| 51 | The Ultimatum | Ultimatum game | Split 10 gold with an envoy. Propose a division — they can accept or reject. Fairness matters more than rationality predicts. |
+| 52 | The First Mover | Sequential games, backward induction | Two merchant houses race to enter an eastern trade route. First mover captures prime assets; second mover decides to compete or withdraw. |
+| 53 | The Chess Match | Minimax, zero-sum thinking | A high-stakes chess match against a calculating opponent. Every move anticipates countermoves. Think several steps ahead. |
+| 54 | The Election | Ranked-choice voting | Choose the voting system to help your preferred candidate win. Plurality, ranked-choice, approval, or Borda — each changes the outcome. |
+| 55 | The Hospital Match | Matching theory, stable marriage | Med students rank hospitals, hospitals rank students. Design a matching algorithm that produces stable, envy-free assignments. |
+| 56 | The Treaty of Havencord | Bargaining with outside options | Seven kingdoms negotiate an alliance. Each has alternatives. The best alternative to a negotiated agreement (BATNA) sets the floor. |
+| 57 | The AI's Objective | Mechanism design, AI alignment | Design an AI's reward function. It optimizes efficiently — but for the wrong thing. The alignment problem in action. |
+| 58 | The Supply Chain | Network effects | Multiple suppliers form a chain. Bottlenecks, bullwhip effects, and coordination failures emerge from decentralized decisions. |
+| 59 | The Social Platform | Network effects, platform design | Design a social network's algorithms. Attention is the resource. Engagement vs well-being creates a fundamental trade-off. |
+| 60 | The Carbon Tax | Public goods, Pigouvian taxation | Design a carbon tax to reduce emissions. Too high and the economy suffers. Too low and emissions continue. Find the sweet spot. |
+| 61 | The Distributed Ledger | Mechanism design, consensus | Design a blockchain consensus protocol. Trade off security, speed, and decentralization. |
+| 62 | The Tragedy Revisited | Tragedy of the commons | A common fishing ground is being depleted. Can you design a governance system that sustains the resource? Ostrom's principles in practice. |
+| 63 | The Society Designer | Mechanism design (capstone) | Design a complete society from first principles. 100 AI agents with diverse personalities live in it for 50 turns. What emerges? |
+| 63.5 | The Mountain Pass | Extensive-form games, backward induction | The Wardens control a mountain pass and demand a toll. Attack, pay, or retreat — but their threat to hold may be a bluff. Walk through the game tree. |
+| B6 | The Standards War Gauntlet | Boss: Coordination | Three standards wars across 30 years. VHS vs Betamax, TCP/IP vs OSI, Chrome vs IE. The meta-lesson: adoption trumps quality in network markets. |
 
-**Era VI Unlock:** All remaining "Discovery Cards". Player receives a **Certificate of Strategic Mastery**.
+**Era VI Unlock:** "Discovery Cards" — **Sequential Games**, **Minimax**, **Ranked-Choice Voting**, **Matching**, **Extensive-Form Games**, **Ultimatum**. Player receives a **Certificate of Strategic Mastery**.
 
 ---
 
@@ -355,13 +360,13 @@ game/
 │   │   ├── definitions-era3.js  # Scenarios 21-30 + Boss 3
 │   │   ├── definitions-era4.js  # Scenarios 31-40 + Boss 4
 │   │   ├── definitions-era5.js  # Scenarios 41-50 + Boss 5
-│   │   └── definitions-era6.js  # Scenarios 51-59 + Boss 6
+│   │   └── definitions-era6.js  # Scenarios 51-63.5 + Boss 6
 │   ├── simulation/
 │   │   ├── resolution.js  # Outcome resolver (PD, Market, Stag Hunt, Chicken, etc.)
 │   │   ├── payoff.js      # Payoff matrix calculators
 │   │   └── resources.js   # Resource icons, labels, descriptions
 │   ├── ai/
-│   │   ├── personality.js # 14 personality presets + factory functions
+│   │   ├── personality.js # 15 personality presets + factory functions
 │   │   ├── decision.js    # Decision engine (weighted random strategy selection)
 │   │   └── memory.js      # Interaction history tracking per agent
 │   ├── ui/
@@ -369,7 +374,7 @@ game/
 │   │                      # results, discovery, encyclopedia, sandbox, timeline,
 │   │                      # editor, replay, analytics dashboard, concept detail
 │   ├── data/
-│   │   ├── concepts.js    # 26 game theory concepts with explanations + payoff matrices
+│   │   ├── concepts.js    # 33 game theory concepts with explanations + payoff matrices
 │   │   └── flavor.js      # Thematic flavor text + BOSS_FIGHTS metadata
 │   └── analytics/
 │       ├── tracker.js     # Event tracking with localStorage persistence
