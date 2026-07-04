@@ -1,6 +1,6 @@
 # Sovereign: A Game of Strategy
 
-A browser-based game that teaches game theory through play. Navigate 60+ scenarios across 6 eras, face AI opponents with distinct personalities, and discover concepts from the Prisoner's Dilemma to mechanism design — all without a single lecture.
+A browser-based game that teaches game theory through play. Navigate 65 scenarios across 6 eras, face AI opponents with distinct personalities, and discover concepts from the Prisoner's Dilemma to mechanism design — all without a single lecture.
 
 ## Setup
 
@@ -38,11 +38,11 @@ game/
 ├── js/
 │   ├── main.js           # App init, game flow, save/load
 │   ├── engine/           # State management, events, persistence
-│   ├── ai/               # 13 AI personalities (titForTat, greedy, etc.)
+│   ├── ai/               # 15 AI personalities (titForTat, greedy, learningAgent, etc.)
 │   ├── simulation/       # Payoff resolution for all game types
-│   ├── scenarios/        # 60+ scenario definitions across 6 eras
+│   ├── scenarios/        # 65 scenario definitions across 6 eras
 │   ├── ui/               # All rendering (scenario, results, analytics, timeline)
-│   ├── data/             # Concept library (46 concepts) and flavor text
+│   ├── data/             # Concept library (33 concepts) and flavor text
 │   └── analytics/        # Event tracking and reports
 └── tests/
     └── test.js           # 54 automated tests
@@ -64,8 +64,8 @@ node tests/test.js
 
 ## AI Personalities
 
-Always Cooperate, Always Defect, Tit-for-Tat, Grim Trigger, Random, Greedy, Risk Seeking, Risk Averse, Long-term Planner, Revenge Driven, Trust Builder, Opportunist, Deceptive
+Always Cooperate, Always Defect, Tit-for-Tat, Grim Trigger, Random, Greedy, Risk Seeking, Risk Averse, Long-term Planner, Revenge Driven, Trust Builder, Opportunist, Coalition Former, Deceptive, Learning Agent
 
 ## Concepts Covered
 
-Scarcity & Opportunity Cost, Prisoner's Dilemma, Tit-for-Tat, Zero-Sum vs Positive-Sum, Dominant Strategies, Nash Equilibrium, Stag Hunt, Chicken, Coordination Games, Commitment Problems, Moral Hazard, Signaling, Screening, Adverse Selection, Auctions (English, First-Price, Vickrey), Voting Systems, Public Goods, Network Effects, Bargaining, Minimax, Mechanism Design, and more across 6 eras.
+Scarcity & Opportunity Cost, Prisoner's Dilemma, Tit-for-Tat, Zero-Sum vs Positive-Sum, Dominant Strategies, Nash Equilibrium, Mixed Strategies, Stag Hunt, Chicken, Coordination Games, Repeated Games, Grim Trigger, Credible Commitment, Principal-Agent, Moral Hazard, Adverse Selection, Signaling, Bayesian Games, Auctions (English, Dutch, First-Price, Vickrey), Mechanism Design, Public Goods, Tragedy of the Commons, Evolutionary Game Theory, Network Effects, Bargaining, Sequential Games, Extensive-Form Games, Minimax, Plurality Voting, Ranked-Choice Voting, Matching, Congestion, Ultimatum, and more across 6 eras.
